@@ -158,6 +158,5 @@ def main():
     dashboard = dashboard_class_obj.get_dashboard(name)
 
 
-
 if __name__ == "__main__":
     main()
