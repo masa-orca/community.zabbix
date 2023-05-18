@@ -1,0 +1,6 @@
+---
+- name: test - create new Zabbix user group
+  zabbix_dashboard:
+    name: Global view
+  register: test
+
