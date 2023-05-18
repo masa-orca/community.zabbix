@@ -174,7 +174,6 @@ def main():
                         default=0,
                     ),
                 ),
-                required_if=[["useip", 0, ["dns"]], ["useip", 1, ["ip"]]],
             ),
         )
     )
