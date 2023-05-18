@@ -87,6 +87,102 @@ options:
                     - 1800
                     - 3600
                 default: 0
+            widgets:
+                type: list
+                elements: dict
+                description:
+                    - Widgets of the dashboard.
+                suboptions:
+                    type:
+                        description:
+                            - Type of the widget.
+                        required: true
+                        type: str
+                        choices:
+                            - clock
+                            - dataover
+                            - discovery
+                            - favgraphs
+                            - favmaps
+                            - graph
+                            - graphprototype
+                            - hostavail
+                            - item
+                            - map
+                            - navtree
+                            - plaintext
+                            - problemhosts
+                            - problems
+                            - problemsbysv
+                            - slareport
+                            - svggraph
+                            - systeminfo
+                            - tophosts
+                            - trigover
+                            - url
+                            - web
+                    name:
+                        description:
+                            - Custom name of the widget.
+                        required: false
+                        type: str
+                    x:
+                        description:
+                            - A horizontal position
+                        required: false
+                        type: int
+                    y:
+                        description:
+                            - A vertical position
+                        required: false
+                        type: int
+                    width:
+                        description:
+                            - Width of the widget
+                        required: false
+                        type: int
+                    height:
+                        description:
+                            - Height of the widget
+                        required: false
+                        type: int
+                    view_mode:
+                        description:
+                            - Header of the widget always appears if C(true).
+                        required: false
+                        type: bool
+                        default: true
+                    fields:
+                        type: list
+                        elements: dict
+                        description:
+                            - Fields of the dashboard.
+                        suboptions:
+                            type:
+                                description:
+                                    - Type of the field.
+                                required: true
+                                type: str
+                                choices:
+                                    - integer
+                                    - string
+                                    - host group
+                                    - host
+                                    - item
+                                    - item prototype
+                                    - graph
+                                    - graph prototype
+                                    - map
+                                    - service
+                                    - sla
+                                    - user
+                                    - action
+                                    - media type
+                            name:
+                                description:
+                                    - Name of the field.
+                                required: true
+                                type: str
 extends_documentation_fragment:
     - community.zabbix.zabbix
 """

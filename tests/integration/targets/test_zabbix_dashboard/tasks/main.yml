@@ -3,4 +3,3 @@
   zabbix_dashboard:
     name: Zabbix server health
   register: test
-
