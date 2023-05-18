@@ -132,25 +132,22 @@ import re
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.community.zabbix.plugins.module_utils.base import ZabbixBase
-from ansible.module_utils.compat.version import LooseVersion
 import ansible_collections.community.zabbix.plugins.module_utils.helpers as zabbix_utils
 
 
 class Dashboard(ZabbixBase):
     def get_dashboard(self, name):
         try:
-            dashboard = self._zapi.dashboard.get({
-                "output": "extend",
-                "selectPages": "extend",
-                "selectUsers": "extend",
-                "selectUserGroups": "extend",
-                "filter": {
-                    "name": name
+            dashboard = self._zapi.dashboard.get(
+                {
+                    "output": "extend",
+                    "selectPages": "extend",
+                    "selectUsers": "extend",
+                    "selectUserGroups": "extend",
+                    "filter": {"name": name},
                 }
-            })
-            self._module.fail_json(
-                msg=dashboard
             )
+            self._module.fail_json(msg=dashboard)
         except Exception as e:
             self._module.fail_json(msg="Failed to update global settings: %s" % e)
 
@@ -161,22 +158,23 @@ def main():
         dict(
             name=dict(type="str", required=True),
             owner=dict(type="str"),
-            private=dict(
-                type="bool"
+            private=dict(type="bool"),
+            default_display_period=dict(
+                type="int", choices=[10, 30, 60, 120, 600, 1800, 3600]
             ),
-            default_display_period=dict(type="int",choices = [10, 30, 60, 120, 600, 1800, 3600]),
             auto_start=dict(type="bool"),
             pages=dict(
                 type="list",
                 elements="dict",
                 options=dict(
                     name=dict(type="str"),
-                    display_period=dict(type="int",choices = [0, 10, 30, 60, 120, 600, 1800, 3600], default=0),
+                    display_period=dict(
+                        type="int",
+                        choices=[0, 10, 30, 60, 120, 600, 1800, 3600],
+                        default=0,
+                    ),
                 ),
-                required_if=[
-                    ["useip", 0, ["dns"]],
-                    ["useip", 1, ["ip"]]
-                ]
+                required_if=[["useip", 0, ["dns"]], ["useip", 1, ["ip"]]],
             ),
         )
     )
