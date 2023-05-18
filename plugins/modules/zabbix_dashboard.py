@@ -42,9 +42,9 @@ options:
             - The dashboard become private if C(true).
         required: false
         type: bool
-    display_period:
+    default_display_period:
         description:
-            - Seconds of page display period.
+            - Seconds of default page display period.
         required: false
         type: int
         choices:
@@ -60,7 +60,33 @@ options:
             - Slideshow stars automatically if C(true).
         required: false
         type: bool
-
+    pages:
+        type: list
+        elements: dict
+        description:
+            - Pages of the dashboard.
+        suboptions:
+            name:
+                description:
+                    - Name of the page.
+                required: false
+                type: str
+            display_period:
+                description:
+                    - Seconds of page display period.
+                    - If C(0), the Zabbix uses value of I(dedault_display_period).
+                required: false
+                type: int
+                choices:
+                    - 0
+                    - 10
+                    - 30
+                    - 60
+                    - 120
+                    - 600
+                    - 1800
+                    - 3600
+                default: 0
 extends_documentation_fragment:
     - community.zabbix.zabbix
 """
@@ -133,13 +159,25 @@ def main():
     argument_spec = zabbix_utils.zabbix_common_argument_spec()
     argument_spec.update(
         dict(
-            name=dict(type="str"),
+            name=dict(type="str", required=True),
             owner=dict(type="str"),
             private=dict(
                 type="bool"
             ),
-            display_period=dict(type="int"),
+            default_display_period=dict(type="int",choices = [10, 30, 60, 120, 600, 1800, 3600]),
             auto_start=dict(type="bool"),
+            pages=dict(
+                type="list",
+                elements="dict",
+                options=dict(
+                    name=dict(type="str"),
+                    display_period=dict(type="int",choices = [0, 10, 30, 60, 120, 600, 1800, 3600], default=0),
+                ),
+                required_if=[
+                    ["useip", 0, ["dns"]],
+                    ["useip", 1, ["ip"]]
+                ]
+            ),
         )
     )
     module = AnsibleModule(
@@ -150,7 +188,7 @@ def main():
     name = module.params["name"]
     owner = module.params["owner"]
     private = module.params["private"]
-    display_period = module.params["display_period"]
+    default_display_period = module.params["default_display_period"]
     auto_start = module.params["auto_start"]
 
     dashboard_class_obj = Dashboard(module)
