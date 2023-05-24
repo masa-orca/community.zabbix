@@ -250,8 +250,6 @@ msg:
     sample: "Successfully update global settings"
 """
 
-import re
-
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.community.zabbix.plugins.module_utils.base import ZabbixBase
@@ -273,6 +271,11 @@ class Dashboard(ZabbixBase):
             self._module.fail_json(msg=dashboard)
         except Exception as e:
             self._module.fail_json(msg="Failed to update global settings: %s" % e)
+
+    def create_dashboard(
+        self, name, owner, private, default_display_period, auto_start
+    ):
+        pass
 
 
 def main():
@@ -397,7 +400,11 @@ def main():
 
     dashboard_class_obj = Dashboard(module)
 
-    dashboard = dashboard_class_obj.get_dashboard(name)
+    # dashboard = dashboard_class_obj.get_dashboard(name)
+
+    dashboard_class_obj.create_dashboard(
+        name, owner, private, default_display_period, auto_start
+    )
 
 
 if __name__ == "__main__":
