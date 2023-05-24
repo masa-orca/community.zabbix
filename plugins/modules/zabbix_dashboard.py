@@ -191,22 +191,22 @@ options:
                                     - This parameter is required if I(type=integer) or I(type=string).
                                 required: false
                                 type: str
-                            value_name:
+                            name_value:
                                 description:
                                     - A name for value of the field.
                                     - This parameter is required if I(type!=integer) and I(type!=string).
                                 required: false
                                 type: str
-                            value_key:
+                            key_value:
                                 description:
                                     - A key for value of the field.
                                     - This parameter is required if I(type=item) or I(type=item_prototype).
                                 required: false
                                 type: str
-                            value_host:
+                            host_value:
                                 description:
                                     - A host name. This parameter is used for filtering value of the field.
-                                    - For example, if I(type=item) and I(value_host="Zabbix server"), This module searches item key from item list of Zabbix server.
+                                    - For example, if I(type=item) and I(host_value="Zabbix server"), This module searches item key from item list of Zabbix server.
                                     - This parameter is required if I(type=item) or I(type=item_prototype) or I(type=graph) or I(type=graph_prototype).
                                 required: false
                                 type: str
@@ -305,6 +305,7 @@ def main():
                         options=dict(
                             type=dict(
                                 type="str",
+                                required=True,
                                 choices=[
                                     "clock",
                                     "dataover",
@@ -335,7 +336,7 @@ def main():
                             y=dict(type="int"),
                             width=dict(type="int"),
                             height=dict(type="int"),
-                            view_mode=dict(type="bool"),
+                            view_mode=dict(type="bool", default=True),
                             fields=dict(
                                 type="list",
                                 elements="dict",
@@ -364,39 +365,39 @@ def main():
                                     value=dict(
                                         type="str",
                                     ),
-                                    value_name=dict(
+                                    name_value=dict(
                                         type="str",
                                     ),
-                                    value_key=dict(
+                                    key_value=dict(
                                         type="str",
                                     ),
-                                    value_host=dict(
+                                    host_value=dict(
                                         type="str",
                                     ),
                                 ),
                                 required_if=[
                                     ["type", "integer", ["value"]],
                                     ["type", "string", ["value"]],
-                                    ["type", "host_group", ["value_name"]],
-                                    ["type", "host", ["value_name"]],
-                                    ["type", "item", ["value_key", "value_host"]],
+                                    ["type", "host_group", ["name_value"]],
+                                    ["type", "host", ["name_value"]],
+                                    ["type", "item", ["key_value", "host_value"]],
                                     [
                                         "type",
                                         "item_prototype",
-                                        ["value_key", "value_host"],
+                                        ["key_value", "host_value"],
                                     ],
-                                    ["type", "graph", ["value_name", "value_host"]],
+                                    ["type", "graph", ["name_value", "host_value"]],
                                     [
                                         "type",
                                         "graph_prototype",
-                                        ["value_name", "value_host"],
+                                        ["name_value", "host_value"],
                                     ],
-                                    ["type", "map", ["value_name"]],
-                                    ["type", "service", ["value_name"]],
-                                    ["type", "sla", ["value_name"]],
-                                    ["type", "user", ["value_name"]],
-                                    ["type", "action", ["value_name"]],
-                                    ["type", "media_type", ["value_name"]],
+                                    ["type", "map", ["name_value"]],
+                                    ["type", "service", ["name_value"]],
+                                    ["type", "sla", ["name_value"]],
+                                    ["type", "user", ["name_value"]],
+                                    ["type", "action", ["name_value"]],
+                                    ["type", "media_type", ["name_value"]],
                                 ],
                             ),
                         ),
