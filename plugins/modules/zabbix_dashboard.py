@@ -206,7 +206,7 @@ options:
                             host_value:
                                 description:
                                     - A host name. This parameter is used for filtering value of the field.
-                                    - For example, if I(type=item) and I(host_value="Zabbix server"), This module searches item key from item list of Zabbix server.
+                                    - For example, if I(type=item) and I(host_value=Zabbix server), This module searches item from item list of Zabbix server.
                                     - This parameter is required if I(type=item) or I(type=item_prototype) or I(type=graph) or I(type=graph_prototype).
                                 required: false
                                 type: str
