@@ -342,14 +342,32 @@ def main():
                                 options=dict(
                                     type=dict(
                                         type="str",
+                                        required=True,
+                                        choices=[
+                                            "integer",
+                                            "string",
+                                            "host_group",
+                                            "host",
+                                            "item",
+                                            "item_prototype",
+                                            "graph",
+                                            "graph_prototype",
+                                            "map",
+                                            "service",
+                                            "sla",
+                                            "user",
+                                            "action",
+                                            "media_type",
+                                        ],
                                     ),
-                                    name=dict(
-                                        type="str",
-                                    ),
+                                    name=dict(type="str", required=True),
                                     value=dict(
                                         type="str",
                                     ),
                                     value_name=dict(
+                                        type="str",
+                                    ),
+                                    value_key=dict(
                                         type="str",
                                     ),
                                     value_host=dict(
