@@ -370,6 +370,7 @@ def main():
                                     ),
                                     key_value=dict(
                                         type="str",
+                                        no_log=False
                                     ),
                                     host_value=dict(
                                         type="str",
