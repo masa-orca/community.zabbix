@@ -272,10 +272,10 @@ class Dashboard(ZabbixBase):
         except Exception as e:
             self._module.fail_json(msg="Failed to update global settings: %s" % e)
 
-    def create_dashboard(
-        self, name, owner, private, default_display_period, auto_start
-    ):
-        pass
+    # def create_dashboard(
+    #     self, name, owner, private, default_display_period, auto_start
+    # ):
+    #     pass
 
 
 def main():
@@ -392,19 +392,19 @@ def main():
         supports_check_mode=True,
     )
 
-    name = module.params["name"]
-    owner = module.params["owner"]
-    private = module.params["private"]
-    default_display_period = module.params["default_display_period"]
-    auto_start = module.params["auto_start"]
+    # name = module.params["name"]
+    # owner = module.params["owner"]
+    # private = module.params["private"]
+    # default_display_period = module.params["default_display_period"]
+    # auto_start = module.params["auto_start"]
 
-    dashboard_class_obj = Dashboard(module)
+    # dashboard_class_obj = Dashboard(module)
 
-    # dashboard = dashboard_class_obj.get_dashboard(name)
+    # # dashboard = dashboard_class_obj.get_dashboard(name)
 
-    dashboard_class_obj.create_dashboard(
-        name, owner, private, default_display_period, auto_start
-    )
+    # dashboard_class_obj.create_dashboard(
+    #     name, owner, private, default_display_period, auto_start
+    # )
 
 
 if __name__ == "__main__":
