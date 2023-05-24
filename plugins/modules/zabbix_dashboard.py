@@ -157,6 +157,8 @@ options:
                         elements: dict
                         description:
                             - Fields of the dashboard.
+                            - Please refer official document about parameter.
+                            - U(https://www.zabbix.com/documentation/current/en/manual/api/reference/dashboard/widget_fields)
                         suboptions:
                             type:
                                 description:
@@ -166,22 +168,47 @@ options:
                                 choices:
                                     - integer
                                     - string
-                                    - host group
+                                    - host_group
                                     - host
                                     - item
-                                    - item prototype
+                                    - item_prototype
                                     - graph
-                                    - graph prototype
+                                    - graph_prototype
                                     - map
                                     - service
                                     - sla
                                     - user
                                     - action
-                                    - media type
+                                    - media_type
                             name:
                                 description:
                                     - Name of the field.
                                 required: true
+                                type: str
+                            value:
+                                description:
+                                    - Value of the field.
+                                    - This parameter is required if I(type=integer) or I(type=string).
+                                required: false
+                                type: str
+                            value_name:
+                                description:
+                                    - A name for value of the field.
+                                    - This parameter is required if I(type!=integer) and I(type!=string).
+                                required: false
+                                type: str
+                            value_key:
+                                description:
+                                    - A key for value of the field.
+                                    - This parameter is required if I(type=item) or I(type=item_prototype).
+                                required: false
+                                type: str
+                            value_host:
+                                description:
+                                    - A host name. This parameter is used for filtering value of the field.
+                                    - For example, if I(type=item) and I(value_host="Zabbix server"), This module searches item key from item list of Zabbix server.
+                                    - This parameter is required if I(type=item) or I(type=item_prototype) or I(type=graph) or I(type=graph_prototype).
+                                required: false
                                 type: str
 extends_documentation_fragment:
     - community.zabbix.zabbix
@@ -268,6 +295,90 @@ def main():
                         type="int",
                         choices=[0, 10, 30, 60, 120, 600, 1800, 3600],
                         default=0,
+                    ),
+                    widgets=dict(
+                        type="list",
+                        elements="dict",
+                        options=dict(
+                            type=dict(
+                                type="str",
+                                choices=[
+                                    "clock",
+                                    "dataover",
+                                    "discovery",
+                                    "favgraphs",
+                                    "favmaps",
+                                    "graph",
+                                    "graphprototype",
+                                    "hostavail",
+                                    "item",
+                                    "map",
+                                    "navtree",
+                                    "plaintext",
+                                    "problemhosts",
+                                    "problems",
+                                    "problemsbysv",
+                                    "slareport",
+                                    "svggraph",
+                                    "systeminfo",
+                                    "tophosts",
+                                    "trigover",
+                                    "url",
+                                    "web",
+                                ],
+                            ),
+                            name=dict(type="str"),
+                            x=dict(type="int"),
+                            y=dict(type="int"),
+                            width=dict(type="int"),
+                            height=dict(type="int"),
+                            view_mode=dict(type="bool"),
+                            fields=dict(
+                                type="list",
+                                elements="dict",
+                                options=dict(
+                                    type=dict(
+                                        type="str",
+                                    ),
+                                    name=dict(
+                                        type="str",
+                                    ),
+                                    value=dict(
+                                        type="str",
+                                    ),
+                                    value_name=dict(
+                                        type="str",
+                                    ),
+                                    value_host=dict(
+                                        type="str",
+                                    ),
+                                ),
+                                required_if=[
+                                    ["type", "integer", ["value"]],
+                                    ["type", "string", ["value"]],
+                                    ["type", "host_group", ["value_name"]],
+                                    ["type", "host", ["value_name"]],
+                                    ["type", "item", ["value_key", "value_host"]],
+                                    [
+                                        "type",
+                                        "item_prototype",
+                                        ["value_key", "value_host"],
+                                    ],
+                                    ["type", "graph", ["value_name", "value_host"]],
+                                    [
+                                        "type",
+                                        "graph_prototype",
+                                        ["value_name", "value_host"],
+                                    ],
+                                    ["type", "map", ["value_name"]],
+                                    ["type", "service", ["value_name"]],
+                                    ["type", "sla", ["value_name"]],
+                                    ["type", "user", ["value_name"]],
+                                    ["type", "action", ["value_name"]],
+                                    ["type", "media_type", ["value_name"]],
+                                ],
+                            ),
+                        ),
                     ),
                 ),
             ),
