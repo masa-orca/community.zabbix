@@ -194,7 +194,7 @@ options:
                             name_value:
                                 description:
                                     - A name for value of the field.
-                                    - This parameter is required if I(type!=integer) and I(type!=string).
+                                    - This parameter is required if I(type!=integer) and I(type!=string) and I(type!=item) and I(type!=item_prototype).
                                 required: false
                                 type: str
                             key_value:
