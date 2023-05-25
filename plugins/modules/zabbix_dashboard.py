@@ -199,7 +199,7 @@ options:
                                 type: str
                             key_value:
                                 description:
-                                    - A key for value of the field.
+                                    - A key of item or item_prototype.This parameter is used for filtering value of the field.
                                     - This parameter is required if I(type=item) or I(type=item_prototype).
                                 required: false
                                 type: str
@@ -210,6 +210,13 @@ options:
                                     - This parameter is required if I(type=item) or I(type=item_prototype) or I(type=graph) or I(type=graph_prototype).
                                 required: false
                                 type: str
+    state:
+        type: str
+        description:
+            - On C(present), it will create if dashboard does not exist or update it if the associated data is different.
+            - On C(absent) will remove the dashboard if it exists.
+        choices: ["present", "absent"]
+        default: "present"
 extends_documentation_fragment:
     - community.zabbix.zabbix
 """
@@ -405,6 +412,7 @@ def main():
                     ),
                 ),
             ),
+            state=dict(type="str", required=False, default="present", choices=["present", "absent"]),
         )
     )
     module = AnsibleModule(
@@ -412,13 +420,24 @@ def main():
         supports_check_mode=True,
     )
 
-    # name = module.params["name"]
-    # owner = module.params["owner"]
-    # private = module.params["private"]
-    # default_display_period = module.params["default_display_period"]
-    # auto_start = module.params["auto_start"]
+    name = module.params["name"]
+    owner = module.params["owner"]
+    private = module.params["private"]
+    default_display_period = module.params["default_display_period"]
+    auto_start = module.params["auto_start"]
+    pages = module.params["pages"]
 
-    # dashboard_class_obj = Dashboard(module)
+    dashboard_class_obj = Dashboard(module)
+
+    if state == "absent":
+        user_directory._zapi.userdirectory.delete([directory[0]["userdirectoryid"]])
+        module.exit_json(
+            changed=True,
+            result="Successfully deleted user directory %s" % parameters["name"],
+        )
+
+
+
 
     # # dashboard = dashboard_class_obj.get_dashboard(name)
 
