@@ -541,9 +541,9 @@ class Host(ZabbixBase):
                     parameters["tls_subject"] = tls_subject
                 if (description is not None and description != zabbix_host_obj["description"]):
                     parameters["description"] = description
-                if ipmi_authtype:
+                if (ipmi_authtype is not None and ipmi_authtype != zabbix_host_obj["ipmi_authtype"]):
                     parameters["ipmi_authtype"] = ipmi_authtype
-                if ipmi_privilege:
+                if (ipmi_privilege is not None and ipmi_privilege != zabbix_host_obj["ipmi_privilege"]):
                     parameters["ipmi_privilege"] = ipmi_privilege
                 if (ipmi_username is not None and ipmi_username != zabbix_host_obj["ipmi_username"]):
                     parameters["ipmi_username"] = ipmi_username
