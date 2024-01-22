@@ -76,7 +76,7 @@
 
 - name: assert that nothing has been changed
   ansible.builtin.assert:
-    that: not zbxhmacro_existing is not changed
+    that: not zbxhmacro_existing is changed
 
 - name: test - attempt to create new host macro in zabbix native format
   community.zabbix.zabbix_hostmacro:
