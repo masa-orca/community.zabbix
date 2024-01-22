@@ -45,6 +45,39 @@
   ansible.builtin.assert:
     that: not zbxhmacro_existing_native is changed
 
+- name: test - attempt to create same host macro without description
+  community.zabbix.zabbix_hostmacro:
+    host_name: zbx_hmacro_host01
+    macro_name: zbxhmacro_test01
+    macro_value: 123
+  register: zbxhmacro_existing
+
+- name: assert that nothing has been changed
+  ansible.builtin.assert:
+    that: not zbxhmacro_existing is not changed
+
+- name: test - attempt to create new host macro without description
+  community.zabbix.zabbix_hostmacro:
+    host_name: zbx_hmacro_host01
+    macro_name: zbxhmacro_test_without_description
+    macro_value: 123
+  register: zbxhmacro_creating
+
+- name: assert that new hostmacro has been created
+  ansible.builtin.assert:
+    that: not zbxhmacro_creating is changed
+
+- name: test - attempt to create same host macro without description
+  community.zabbix.zabbix_hostmacro:
+    host_name: zbx_hmacro_host01
+    macro_name: zbxhmacro_test_without_description
+    macro_value: 123
+  register: zbxhmacro_existing
+
+- name: assert that nothing has been changed
+  ansible.builtin.assert:
+    that: not zbxhmacro_existing is not changed
+
 - name: test - attempt to create new host macro in zabbix native format
   community.zabbix.zabbix_hostmacro:
     host_name: zbx_hmacro_host01
