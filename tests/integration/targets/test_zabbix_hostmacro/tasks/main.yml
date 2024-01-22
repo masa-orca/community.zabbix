@@ -65,7 +65,7 @@
 
 - name: assert that new hostmacro has been created
   ansible.builtin.assert:
-    that: not zbxhmacro_creating is changed
+    that: zbxhmacro_creating is changed
 
 - name: test - attempt to create same host macro without description
   community.zabbix.zabbix_hostmacro:
