@@ -198,12 +198,16 @@ class MFA(ZabbixBase):
         try:
             parameter = self._convert_to_parameter(name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
             parameter.update({'mfaid': current_mfa['mfaid']})
-            self._module.fail_json(
-                msg="Failed to update MFA method: %s" % current_mfa
-            )
-            if (method_type == 'totp'
-               and parameter['hash_function'] == current_mfa['hash_function']
-               and parameter['code_length'] == current_mfa['code_length']):
+            if (method_type == 'totp'):
+                current_mfa = zabbix_utils.helper_normalize_data(
+                    current_mfa, del_keys=["api_hostname", "clientid"]
+                )[0]
+
+                config_diff = {}
+                zabbix_utils.helper_compare_dictionaries(parameter, current_mfa, config_diff)
+                self._module.fail_json(
+                    msg="Failed to update MFA method: %s" % config_diff
+                )
                 self._module.exit_json(changed=False)
 
             if self._module.check_mode:
