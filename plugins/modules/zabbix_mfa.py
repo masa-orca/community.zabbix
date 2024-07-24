@@ -190,10 +190,10 @@ class MFA(ZabbixBase):
                 msg="Failed to create MFA setting: %s" % e
             )
 
-    def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+    def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
         try:
             parameter = _convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
-            parameter.update('mfaid', current_mfa['mfaid'])
+            parameter.update({'mfaid', current_mfa['mfaid']})
             if (mfa_type == 'totp'
                and parameter['hash_function'] == current_mfa['hash_function']
                and parameter['code_length'] == current_mfa['code_length']):
