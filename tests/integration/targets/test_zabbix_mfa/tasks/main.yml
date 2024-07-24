@@ -71,7 +71,7 @@
 
 - name: test - try to delete regexp
   community.zabbix.zabbix_mfa:
-    name: Zabbix TOTP
+    name: Duo authentication service prompt
     state: absent
   register: zbxmfa_delete
 
