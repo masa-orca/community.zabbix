@@ -152,7 +152,7 @@ class MFA(ZabbixBase):
         parameter['name'] = self._module.params["name"]
         parameter['type'] = str(zabbix_utils.helper_to_numeric_value(
             [
-                 None,
+                None,
                 "totp",
                 "duo_universal_prompt"
             ],
