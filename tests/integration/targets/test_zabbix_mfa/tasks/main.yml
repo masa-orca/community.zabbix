@@ -6,7 +6,7 @@
 - name: test - try to create MFA seting
   community.zabbix.zabbix_mfa:
     name: Zabbix TOTP
-    mfa_type: totp
+    method_type: totp
     hash_function: sha-1
     code_length: 6
   register: zbxmfa_create
@@ -19,7 +19,7 @@
 - name: test - try to update MFA seting (present)
   community.zabbix.zabbix_mfa:
     name: Zabbix TOTP
-    mfa_type: totp
+    method_type: totp
     hash_function: sha-1
     code_length: 6
   register: zbxmfa_update
@@ -28,6 +28,46 @@
   ansible.builtin.assert:
     that:
       - zbxmfa_update.changed is sameas False
+
+- name: test - try to delete regexp
+  community.zabbix.zabbix_mfa:
+    name: Zabbix TOTP
+    state: absent
+  register: zbxmfa_delete
+
+- name: assert that MFA method was deleted
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_delete.changed is sameas True
+      - zbxmfa_delete.msg == "Successfully deleted MFA method."
+
+- name: test - try to create MFA seting
+  community.zabbix.zabbix_mfa:
+    name: Duo authentication service prompt
+    method_type: duo_universal_prompt
+    api_hostname: api_hostname
+    clientid: clientid
+    client_secret: client_secret
+  register: zbxmfa_create
+
+- name: assert that MFA method was created
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_create.changed is sameas True
+
+- name: test - try to update MFA seting (present)
+  community.zabbix.zabbix_mfa:
+    name: Duo authentication service prompt
+    method_type: duo_universal_prompt
+    api_hostname: api_hostname
+    clientid: clientid
+    client_secret: client_secret
+  register: zbxmfa_update
+
+- name: assert that MFA method was NOT updated
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_update.changed is sameas True
 
 - name: test - try to delete regexp
   community.zabbix.zabbix_mfa:

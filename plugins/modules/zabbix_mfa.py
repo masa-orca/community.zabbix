@@ -34,7 +34,7 @@ options:
             - Name of this MFA method
         type: str
         required: true
-    mfa_type:
+    method_type:
         description:
             - A test string for this MFA method
         type: str
@@ -78,7 +78,7 @@ options:
 
 notes:
     - Only Zabbix >= 7.0 is supported.
-    - This module returns changed=true when I(mfa_type) is C(duo_universal_prompt) as Zabbix API
+    - This module returns changed=true when I(method_type) is C(duo_universal_prompt) as Zabbix API
       will not return any sensitive information back for module to compare.
 
 extends_documentation_fragment:
@@ -147,7 +147,7 @@ class MFA(ZabbixBase):
                 msg="Failed to delete MFA method: %s" % e
             )
 
-    def _convert_to_parameter(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
+    def _convert_to_parameter(self, name, method_type, hash_function, code_length, api_hostname, clientid, client_secret):
         parameter = {}
         parameter['name'] = name
         parameter['type'] = str(zabbix_utils.helper_to_numeric_value(
@@ -156,9 +156,9 @@ class MFA(ZabbixBase):
                 "totp",
                 "duo_universal_prompt"
             ],
-            mfa_type
+            method_type
         ))
-        if (mfa_type == 'totp'):
+        if (method_type == 'totp'):
             parameter['hash_function'] = str(zabbix_utils.helper_to_numeric_value(
                 [
                     None,
@@ -175,8 +175,8 @@ class MFA(ZabbixBase):
             parameter['client_secret'] = str(client_secret)
         return parameter
 
-    def create_mfa(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
-        parameter = self._convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+    def create_mfa(self, name, method_type, hash_function, code_length, api_hostname, clientid, client_secret):
+        parameter = self._convert_to_parameter(name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
         try:
             if self._module.check_mode:
                 self._module.exit_json(changed=True)
@@ -189,11 +189,11 @@ class MFA(ZabbixBase):
                 msg="Failed to create MFA method: %s" % e
             )
 
-    def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
+    def update_mfa(self, current_mfa, name, method_type, hash_function, code_length, api_hostname, clientid, client_secret):
         try:
-            parameter = self._convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            parameter = self._convert_to_parameter(name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
             parameter.update({'mfaid': current_mfa['mfaid']})
-            if (mfa_type == 'totp'
+            if (method_type == 'totp'
                and parameter['hash_function'] == current_mfa['hash_function']
                and parameter['code_length'] == current_mfa['code_length']):
                 self._module.exit_json(changed=False)
@@ -217,7 +217,7 @@ def main():
     argument_spec.update(
         dict(
             name=dict(type="str", required=True),
-            mfa_type=dict(
+            method_type=dict(
                 type="str",
                 choices=[
                     "totp",
@@ -251,7 +251,7 @@ def main():
         argument_spec=argument_spec,
         required_if=[
             [
-                "mfa_type",
+                "method_type",
                 "totp",
                 [
                     "hash_function",
@@ -259,7 +259,7 @@ def main():
                 ]
             ],
             [
-                "mfa_type",
+                "method_type",
                 "duo_universal_prompt",
                 [
                     "api_hostname",
@@ -272,17 +272,17 @@ def main():
             ('hash_function', 'api_hostname')
         ],
         required_by={
-            'hash_function': 'mfa_type',
-            'code_length': 'mfa_type',
-            'api_hostname': 'mfa_type',
-            'clientid': 'mfa_type',
-            'client_secret': 'mfa_type'
+            'hash_function': 'method_type',
+            'code_length': 'method_type',
+            'api_hostname': 'method_type',
+            'clientid': 'method_type',
+            'client_secret': 'method_type'
         },
         supports_check_mode=True,
     )
 
     name = module.params["name"]
-    mfa_type = module.params["mfa_type"]
+    method_type = module.params["method_type"]
     hash_function = module.params["hash_function"]
     code_length = module.params["code_length"]
     api_hostname = module.params["api_hostname"]
@@ -300,9 +300,9 @@ def main():
             module.exit_json(changed=False)
     else:
         if mfa:
-            mfa_class_obj.update_mfa(mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            mfa_class_obj.update_mfa(mfa, name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
         else:
-            mfa_class_obj.create_mfa(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            mfa_class_obj.create_mfa(name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
 
 
 if __name__ == "__main__":
