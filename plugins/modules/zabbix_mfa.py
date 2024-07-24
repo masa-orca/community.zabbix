@@ -26,7 +26,7 @@ author:
 requirements:
     - "python >= 3.11"
 
-version_added: 3.0.5
+version_added: 3.1.0
 
 options:
     name:
@@ -238,7 +238,7 @@ def main():
             ),
             api_hostname=dict(type="str"),
             clientid=dict(type="str"),
-            client_secret=dict(type="str"),
+            client_secret=dict(type="str", no_log=True)),
             state=dict(
                 type="str",
                 default="present",
