@@ -149,15 +149,15 @@ class MFA(ZabbixBase):
 
     def _convert_to_parameter(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
         parameter = {}
-        parameter['name'] = module.params["name"]
+        parameter['name'] = self._module.params["name"]
         parameter['type'] = str(zabbix_utils.helper_to_numeric_value(
-                [
-                    None,
-                    "totp",
-                    "duo_universal_prompt"
-                ],
-                mfa_type
-            ))
+            [
+                 None,
+                "totp",
+                "duo_universal_prompt"
+            ],
+            mfa_type
+        ))
         if (mfa_type == 'totp'):
             parameter['hash_function'] = str(zabbix_utils.helper_to_numeric_value(
                 [
@@ -168,20 +168,19 @@ class MFA(ZabbixBase):
                 ],
                 hash_function
             ))
-            parameter['code_length'] = str(module.params["code_length"])
+            parameter['code_length'] = str(self._module.params["code_length"])
         else:
-            parameter['api_hostname'] = str(module.params["api_hostname"])
-            parameter['clientid'] = str(module.params["clientid"])
-            parameter['client_secret'] = str(module.params["client_secret"])
+            parameter['api_hostname'] = str(self._module.params["api_hostname"])
+            parameter['clientid'] = str(self._module.params["clientid"])
+            parameter['client_secret'] = str(self._module.params["client_secret"])
         return parameter
 
     def create_mfa(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
-        parameter = _convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+        parameter = self._convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
         try:
             if self._module.check_mode:
                 self._module.exit_json(changed=True)
-            self._zapi.mfa.create(parameter
-            )
+            self._zapi.mfa.create(parameter)
             self._module.exit_json(
                 changed=True, msg="Successfully created MFA setting."
             )
@@ -192,12 +191,12 @@ class MFA(ZabbixBase):
 
     def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
         try:
-            parameter = _convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            parameter = self._convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
             parameter.update({'mfaid', current_mfa['mfaid']})
             if (mfa_type == 'totp'
                and parameter['hash_function'] == current_mfa['hash_function']
                and parameter['code_length'] == current_mfa['code_length']):
-                module.exit_json(changed=False)
+                self._module.exit_json(changed=False)
 
             if self._module.check_mode:
                 self._module.exit_json(changed=True)
