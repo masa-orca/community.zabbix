@@ -12,13 +12,13 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 ---
-module: zabbix_regexp
+module: zabbix_mfa
 
 short_description: Create/update/delete Zabbix MFA
 
 
 description:
-    - This module allows you to create, update and delete Zabbix MFA.
+    - This module allows you to create, update and delete Zabbix MFA setting.
 
 author:
     - ONODERA Masaru(@masa-orca)
@@ -31,12 +31,12 @@ version_added: 3.0.5
 options:
     name:
         description:
-            - Name of this regular expression
+            - Name of this MFA setting
         type: str
         required: true
     mfa_type:
         description:
-            - A test string for this regular expression
+            - A test string for this MFA setting
         type: str
         choices:
             - "totp"
@@ -58,15 +58,15 @@ options:
             - 8
     api_hostname:
         description:
-            - 	API hostname provided by the Duo authentication service.
+            - API hostname provided by the Duo authentication service.
         type: str
     clientid:
         description:
-            - 	API hostname provided by the Duo authentication service.
+            - API hostname provided by the Duo authentication service.
         type: str
     client_secret:
         description:
-            - 	API hostname provided by the Duo authentication service.
+            - API hostname provided by the Duo authentication service.
         type: str
     state:
         description:
@@ -87,42 +87,15 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = """
-# If you want to use Username and Password to be authenticated by Zabbix Server
-- name: Set credentials to access Zabbix Server API
-  ansible.builtin.set_fact:
-    ansible_user: Admin
-    ansible_httpapi_pass: zabbix
 
-# If you want to use API token to be authenticated by Zabbix Server
-# https://www.zabbix.com/documentation/current/en/manual/web_interface/frontend_sections/administration/general#api-tokens
-- name: Set API token
-  ansible.builtin.set_fact:
-    ansible_zabbix_auth_key: 8ec0d52432c15c91fcafe9888500cf9a607f44091ab554dbee860f6b44fac895
-
-- name: Update regexp of 'File systems for discovery'
-  # set task level variables as we change ansible_connection plugin here
-  vars:
-    ansible_network_os: community.zabbix.zabbix
-    ansible_connection: httpapi
-    ansible_httpapi_port: 443
-    ansible_httpapi_use_ssl: true
-    ansible_httpapi_validate_certs: false
-    ansible_zabbix_url_path: 'zabbixeu'  # If Zabbix WebUI runs on non-default (zabbix) path ,e.g. http://<FQDN>/zabbixeu
-    ansible_host: zabbix-example-fqdn.org
-  community.zabbix.zabbix_regexp:
-    name: File systems for discovery
-    test_string: ext2
-    expressions:
-      - expression: "^(btrfs|ext2|ext3|ext4|reiser|xfs|ffs|ufs|jfs|jfs2|vxfs|hfs|apfs|refs|ntfs|fat32|zfs)$"
-        expression_type: result_is_true
 """
 
 RETURN = """
 msg:
-    description: The result of the operation
+    description: The result of the creating operation
     returned: success
     type: str
-    sample: 'Successfully updated regular expression setting'
+    sample: 'Successfully created MFA setting'
 """
 
 
