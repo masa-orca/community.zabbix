@@ -238,7 +238,7 @@ def main():
             ),
             api_hostname=dict(type="str"),
             clientid=dict(type="str"),
-            client_secret=dict(type="str", no_log=True)),
+            client_secret=dict(type="str", no_log=True),
             state=dict(
                 type="str",
                 default="present",
