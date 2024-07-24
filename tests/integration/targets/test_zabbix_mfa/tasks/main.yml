@@ -11,7 +11,7 @@
     code_length: 6
   register: zbxmfa_create
 
-- name: assert that MFA setting was created
+- name: assert that MFA method was created
   ansible.builtin.assert:
     that:
       - zbxmfa_create.changed is sameas True
@@ -24,7 +24,7 @@
     code_length: 6
   register: zbxmfa_update
 
-- name: assert that MFA setting was NOT updated
+- name: assert that MFA method was NOT updated
   ansible.builtin.assert:
     that:
       - zbxmfa_update.changed is sameas False
@@ -35,8 +35,8 @@
     state: absent
   register: zbxmfa_delete
 
-- name: assert that MFA setting was deleted
+- name: assert that MFA method was deleted
   ansible.builtin.assert:
     that:
       - zbxmfa_delete.changed is sameas True
-      - zbxmfa_delete.msg == "Successfully deleted MFA setting."
+      - zbxmfa_delete.msg == "Successfully deleted MFA method."

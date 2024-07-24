@@ -18,7 +18,7 @@ short_description: Create/update/delete Zabbix MFA
 
 
 description:
-    - This module allows you to create, update and delete Zabbix MFA setting.
+    - This module allows you to create, update and delete Zabbix MFA method.
 
 author:
     - ONODERA Masaru(@masa-orca)
@@ -31,12 +31,12 @@ version_added: 3.1.0
 options:
     name:
         description:
-            - Name of this MFA setting
+            - Name of this MFA method
         type: str
         required: true
     mfa_type:
         description:
-            - A test string for this MFA setting
+            - A test string for this MFA method
         type: str
         choices:
             - "totp"
@@ -95,7 +95,7 @@ msg:
     description: The result of the creating operation
     returned: success
     type: str
-    sample: 'Successfully created MFA setting'
+    sample: 'Successfully created MFA method'
 """
 
 
@@ -130,7 +130,7 @@ class MFA(ZabbixBase):
             return mfa
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to get MFA setting: %s" % e
+                msg="Failed to get MFA method: %s" % e
             )
 
     def delete_mfa(self, mfa):
@@ -140,11 +140,11 @@ class MFA(ZabbixBase):
                 self._module.exit_json(changed=True)
             self._zapi.mfa.delete(parameter)
             self._module.exit_json(
-                changed=True, msg="Successfully deleted MFA setting."
+                changed=True, msg="Successfully deleted MFA method."
             )
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to delete MFA setting: %s" % e
+                msg="Failed to delete MFA method: %s" % e
             )
 
     def _convert_to_parameter(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
@@ -182,11 +182,11 @@ class MFA(ZabbixBase):
                 self._module.exit_json(changed=True)
             self._zapi.mfa.create(parameter)
             self._module.exit_json(
-                changed=True, msg="Successfully created MFA setting."
+                changed=True, msg="Successfully created MFA method."
             )
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to create MFA setting: %s" % e
+                msg="Failed to create MFA method: %s" % e
             )
 
     def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
@@ -202,11 +202,11 @@ class MFA(ZabbixBase):
                 self._module.exit_json(changed=True)
             self._zapi.mfa.update(parameter)
             self._module.exit_json(
-                changed=True, msg="Successfully updated MFA setting."
+                changed=True, msg="Successfully updated MFA method."
             )
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to update MFA setting: %s" % e
+                msg="Failed to update MFA method: %s" % e
             )
 
 
