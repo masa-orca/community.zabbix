@@ -149,7 +149,7 @@ class MFA(ZabbixBase):
 
     def _convert_to_parameter(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
         parameter = {}
-        parameter['name'] = self._module.params["name"]
+        parameter['name'] = name
         parameter['type'] = str(zabbix_utils.helper_to_numeric_value(
             [
                 None,
@@ -168,11 +168,11 @@ class MFA(ZabbixBase):
                 ],
                 hash_function
             ))
-            parameter['code_length'] = str(self._module.params["code_length"])
+            parameter['code_length'] = str(code_length)
         else:
-            parameter['api_hostname'] = str(self._module.params["api_hostname"])
-            parameter['clientid'] = str(self._module.params["clientid"])
-            parameter['client_secret'] = str(self._module.params["client_secret"])
+            parameter['api_hostname'] = str(api_hostname)
+            parameter['clientid'] = str(clientid)
+            parameter['client_secret'] = str(client_secret)
         return parameter
 
     def create_mfa(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
@@ -271,6 +271,13 @@ def main():
         mutually_exclusive=[
             ('hash_function', 'api_hostname')
         ],
+        required_by={
+            'hash_function': 'mfa_type',
+            'code_length': 'mfa_type',
+            'api_hostname': 'mfa_type',
+            'clientid': 'mfa_type',
+            'client_secret': 'mfa_type',
+        },
         supports_check_mode=True,
     )
 

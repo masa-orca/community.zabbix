@@ -6,6 +6,7 @@
 - name: test - try to create MFA seting
   community.zabbix.zabbix_mfa:
     name: Zabbix TOTP
+    mfa_type: totp
     hash_function: sha-1
     code_length: 6
   register: zbxmfa_create
@@ -18,6 +19,7 @@
 - name: test - try to update MFA seting (present)
   community.zabbix.zabbix_mfa:
     name: Zabbix TOTP
+    mfa_type: totp
     hash_function: sha-1
     code_length: 6
   register: zbxmfa_update
