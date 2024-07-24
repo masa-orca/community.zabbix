@@ -203,7 +203,7 @@ class MFA(ZabbixBase):
             self._zapi.mfa.update(parameter)
             self._module.exit_json(
                 changed=True, msg="Successfully updated MFA setting."
-                )
+            )
         except Exception as e:
             self._module.fail_json(
                 msg="Failed to update MFA setting: %s" % e
