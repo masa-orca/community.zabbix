@@ -202,13 +202,10 @@ class MFA(ZabbixBase):
                 current_mfa = zabbix_utils.helper_normalize_data(
                     current_mfa, del_keys=["api_hostname", "clientid"]
                 )[0]
-
-                config_diff = {}
-                zabbix_utils.helper_compare_dictionaries(parameter, current_mfa, config_diff)
-                self._module.fail_json(
-                    msg="Failed to update MFA method: %s" % config_diff
-                )
-                self._module.exit_json(changed=False)
+                difference = {}
+                zabbix_utils.helper_compare_dictionaries(parameter, current_mfa, difference)
+                if (difference == {}):
+                    self._module.exit_json(changed=False)
 
             if self._module.check_mode:
                 self._module.exit_json(changed=True)
