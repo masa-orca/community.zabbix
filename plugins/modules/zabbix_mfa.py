@@ -154,7 +154,6 @@ class MFA(ZabbixBase):
             for _mfa in mfas:
                 if (_mfa["name"] == mfa_name):
                     mfa = _mfa
-
             return mfa
         except Exception as e:
             self._module.fail_json(
@@ -175,68 +174,67 @@ class MFA(ZabbixBase):
                 msg="Failed to delete MFA setting: %s" % e
             )
 
-    def create_regexp(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
+    def _convert_to_parameter(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
+        parameter = {}
+        parameter['name'] = module.params["name"]
+        parameter['type'] = str(zabbix_utils.helper_to_numeric_value(
+                [
+                    None,
+                    "totp",
+                    "duo_universal_prompt"
+                ],
+                mfa_type
+            ))
+        if (mfa_type == 'totp'):
+            parameter['hash_function'] = str(zabbix_utils.helper_to_numeric_value(
+                [
+                    None,
+                    "sha-1",
+                    "sha-256",
+                    "sha-512"
+                ],
+                hash_function
+            ))
+            parameter['code_length'] = str(module.params["code_length"])
+        else:
+            parameter['api_hostname'] = str(module.params["api_hostname"])
+            parameter['clientid'] = str(module.params["clientid"])
+            parameter['client_secret'] = str(module.params["client_secret"])
+        return parameter
+
+    def create_mfa(self, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
+        parameter = _convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
         try:
             if self._module.check_mode:
                 self._module.exit_json(changed=True)
-            self._zapi.regexp.create(
-                {
-                    "name": name,
-                    "type": mfa_type,
-                    "hash_function": hash_function,
-                    "code_length": code_length,
-                    "api_hostname": api_hostname,
-                    "hash_function": hash_function,
-                    "hash_function": hash_function,
-                    "hash_function": hash_function,
-                    "hash_function": hash_function,
-                }
+            self._zapi.mfa.create(parameter
             )
             self._module.exit_json(
-                changed=True, msg="Successfully created regular expression setting."
+                changed=True, msg="Successfully created MFA setting."
             )
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to create regular expression setting: %s" % e
+                msg="Failed to create MFA setting: %s" % e
             )
 
-    def update_regexp(self, current_regexp, name, test_string, expressions):
+    def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
         try:
-            current_expressions = []
-            for expression in current_regexp["expressions"]:
-                if expression["expression_type"] != "1":
-                    expression = zabbix_utils.helper_normalize_data(
-                        expression, del_keys=["exp_delimiter"]
-                    )[0]
-                current_expressions.append(expression)
-            future_expressions = self._convert_expressions_to_json(expressions)
-            diff_expressions = []
-            zabbix_utils.helper_compare_lists(
-                current_expressions, future_expressions, diff_expressions
-            )
-            if (
-                current_regexp["name"] == name
-                and current_regexp["test_string"] == test_string
-                and len(diff_expressions) == 0
-            ):
-                self._module.exit_json(changed=False)
-            else:
-                if self._module.check_mode:
-                    self._module.exit_json(changed=True)
-                self._zapi.regexp.update(
-                    {
-                        "regexpid": current_regexp["regexpid"],
-                        "name": name,
-                        "test_string": test_string,
-                        "expressions": future_expressions,
-                    }
-                )
-                self._module.exit_json(
-                    changed=True, msg="Successfully updated regular expression setting."
+            parameter = _convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            parameter.update('mfaid', current_mfa['mfaid'])
+            if (mfa_type == 'totp'
+               and parameter['hash_function'] == current_mfa['hash_function']
+               and parameter['code_length'] == current_mfa['code_length']):
+                module.exit_json(changed=False)
+
+            if self._module.check_mode:
+                self._module.exit_json(changed=True)
+            self._zapi.mfa.update(parameter)
+            self._module.exit_json(
+                changed=True, msg="Successfully updated MFA setting."
                 )
         except Exception as e:
             self._module.fail_json(
-                msg="Failed to update regular expression setting: %s" % e
+                msg="Failed to update MFA setting: %s" % e
             )
 
 
@@ -298,31 +296,16 @@ def main():
                 ]
             ]
         ],
+        mutually_exclusive=[
+            ('hash_function', 'api_hostname')
+        ],
         supports_check_mode=True,
     )
 
     name = module.params["name"]
-    if isinstance(module.params["mfa_type"], str):
-        mfa_type = str(zabbix_utils.helper_to_numeric_value(
-            [
-                None,
-                "totp",
-                "duo_universal_prompt"
-            ],
-            module.params["mfa_type"]
-        ))
-    if isinstance(module.params["hash_function"], str):
-        hash_function = str(zabbix_utils.helper_to_numeric_value(
-            [
-                None,
-                "sha-1",
-                "sha-256",
-                "sha-512"
-            ],
-            module.params["hash_function"]
-        ))
-    if module.params["code_length"]:
-        code_length = str(module.params["code_length"])
+    mfa_type = module.params["mfa_type"]
+    hash_function = module.params["hash_function"]
+    code_length = module.params["code_length"]
     api_hostname = module.params["api_hostname"]
     clientid = module.params["clientid"]
     client_secret = module.params["client_secret"]
@@ -338,7 +321,7 @@ def main():
             module.exit_json(changed=False)
     else:
         if mfa:
-            mfa_class_obj.update_mfa(mfa, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
+            mfa_class_obj.update_mfa(mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
         else:
             mfa_class_obj.create_mfa(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
 

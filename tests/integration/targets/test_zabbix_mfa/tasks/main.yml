@@ -1,0 +1,40 @@
+---
+- name: test - do not run tests with < Zabbix 7.0
+  meta: end_play
+  when: zabbix_version is version('7.0', '<')
+
+- name: test - try to create MFA seting
+  community.zabbix.zabbix_mfa:
+    name: Zabbix TOTP
+    hash_function: sha-1
+    code_length: 6
+  register: zbxmfa_create
+
+- name: assert that MFA setting was created
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_create.changed is sameas True
+
+- name: test - try to update MFA seting (present)
+  community.zabbix.zabbix_mfa:
+    name: Zabbix TOTP
+    hash_function: sha-1
+    code_length: 6
+  register: zbxmfa_update
+
+- name: assert that MFA setting was NOT updated
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_update.changed is sameas False
+
+- name: test - try to delete regexp
+  community.zabbix.zabbix_mfa:
+    name: Zabbix TOTP
+    state: absent
+  register: zbxmfa_delete
+
+- name: assert that MFA setting was deleted
+  ansible.builtin.assert:
+    that:
+      - zbxmfa_delete.changed is sameas True
+      - zbxmfa_delete.msg == "Successfully deleted MFA setting."
