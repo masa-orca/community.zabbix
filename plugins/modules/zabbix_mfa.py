@@ -14,7 +14,7 @@ DOCUMENTATION = """
 ---
 module: zabbix_mfa
 
-short_description: Create/update/delete Zabbix MFA
+short_description: Create/update/delete Zabbix MFA method
 
 
 description:
@@ -36,14 +36,15 @@ options:
         required: true
     method_type:
         description:
-            - A test string for this MFA method
+            - A type of this MFA method
         type: str
         choices:
             - "totp"
             - "duo_universal_prompt"
     hash_function:
         description:
-            - List of expressions.
+            - Type of the hash function for generating TOTP codes.
+            - Required when C(method_type=totp).
         type: str
         choices:
             - "sha-1"
@@ -51,7 +52,8 @@ options:
             - "sha-512"
     code_length:
         description:
-            - List of expressions.
+            - Verification code length.
+            - Required when C(method_type=totp).
         type: int
         choices:
             - 6
@@ -59,14 +61,17 @@ options:
     api_hostname:
         description:
             - API hostname provided by the Duo authentication service.
+            - Required when C(method_type=duo_universal_prompt).
         type: str
     clientid:
         description:
-            - API hostname provided by the Duo authentication service.
+            - Client ID provided by the Duo authentication service.
+            - Required when C(method_type=duo_universal_prompt).
         type: str
     client_secret:
         description:
-            - API hostname provided by the Duo authentication service.
+            - Client secret provided by the Duo authentication service.
+            - Required when C(method_type=duo_universal_prompt).
         type: str
     state:
         description:
@@ -193,6 +198,9 @@ class MFA(ZabbixBase):
         try:
             parameter = self._convert_to_parameter(name, method_type, hash_function, code_length, api_hostname, clientid, client_secret)
             parameter.update({'mfaid': current_mfa['mfaid']})
+            self._module.fail_json(
+                msg="Failed to update MFA method: %s" % current_mfa
+            )
             if (method_type == 'totp'
                and parameter['hash_function'] == current_mfa['hash_function']
                and parameter['code_length'] == current_mfa['code_length']):
