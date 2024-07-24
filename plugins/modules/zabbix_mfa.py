@@ -192,7 +192,7 @@ class MFA(ZabbixBase):
     def update_mfa(self, current_mfa, name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret):
         try:
             parameter = self._convert_to_parameter(name, mfa_type, hash_function, code_length, api_hostname, clientid, client_secret)
-            parameter.update({'mfaid', current_mfa['mfaid']})
+            parameter.update({'mfaid': current_mfa['mfaid']})
             if (mfa_type == 'totp'
                and parameter['hash_function'] == current_mfa['hash_function']
                and parameter['code_length'] == current_mfa['code_length']):
@@ -276,7 +276,7 @@ def main():
             'code_length': 'mfa_type',
             'api_hostname': 'mfa_type',
             'clientid': 'mfa_type',
-            'client_secret': 'mfa_type',
+            'client_secret': 'mfa_type'
         },
         supports_check_mode=True,
     )
