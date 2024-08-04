@@ -257,6 +257,21 @@ options:
         required: false
         type: list
         elements: str
+    mfa_status:
+        description:
+            - A status of MFA setting.
+            - This parameter is available since Zabbix 7.0.
+        required: false
+        type: str
+        choices: [ "disabled", "enabled" ]
+    mfa_method:
+        description:
+            - A name of MFA method.
+            - The method is used as default MFA method for User group setting.
+            - This setting is required if I(mfa_status) is C(enabled).
+            - This parameter is available since Zabbix 7.0.
+        required: false
+        type: str
 
 extends_documentation_fragment:
     - community.zabbix.zabbix
@@ -424,6 +439,24 @@ class Authentication(ZabbixBase):
         except Exception as e:
             self._module.fail_json(msg="Failed to get authentication setting: %s" % e)
 
+    def get_mfa(self, mfa_name):
+        try:
+            mfas = self._zapi.mfa.get(
+                {
+                    "output": "extend",
+                    "search": {"name": mfa_name},
+                }
+            )
+            mfa = None
+            for _mfa in mfas:
+                if (_mfa["name"] == mfa_name):
+                    mfa = _mfa
+            return mfa
+        except Exception as e:
+            self._module.fail_json(
+                msg="Failed to get MFA method: %s" % e
+            )
+
     # update authentication setting
     def update_authentication(
         self,
@@ -464,6 +497,8 @@ class Authentication(ZabbixBase):
         saml_jit_status,
         jit_provision_interval,
         disabled_usrgroup,
+        mfa_status,
+        mfa_method
     ):
         try:
             params = {}
@@ -652,6 +687,15 @@ class Authentication(ZabbixBase):
 
                 params["passwd_check_rules"] = str(params["passwd_check_rules"])
 
+            if LooseVersion("7.0") <= LooseVersion(self._zbx_api_version):
+                if mfa_status:
+                    params["mfa_status"] = str(helper_to_numeric_value(
+                        ["disabled", "enabled"],
+                        mfa_status
+                    ))
+                if mfa_method:
+                    params["mfaid"] = get_mfa(mfa_method)["mfaid"]
+
             future_authentication = current_authentication.copy()
             future_authentication.update(params)
 
@@ -763,9 +807,15 @@ def main():
             disabled_usrgroup=dict(type="str"),
             passwd_min_length=dict(type="int", no_log=False),
             passwd_check_rules=dict(type="list", elements="str", no_log=False),
+            mfa_status=dict(type="str", choices=["disabled", "enabled"]),
+            mfa_method=dict(type="str")
         )
     )
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if= [["mfa_status", "enabled", ["mfa_method"]]],
+        supports_check_mode=True
+    )
 
     authentication_type = module.params["authentication_type"]
     http_auth_enabled = module.params["http_auth_enabled"]
@@ -803,6 +853,8 @@ def main():
     saml_jit_status = module.params["saml_jit_status"]
     jit_provision_interval = module.params["jit_provision_interval"]
     disabled_usrgroup = module.params["disabled_usrgroup"]
+    mfa_status = module.params["mfa_status"]
+    mfa_method = module.params["mfa_method"]
 
     authentication = Authentication(module)
 
@@ -845,6 +897,8 @@ def main():
         saml_jit_status,
         jit_provision_interval,
         disabled_usrgroup,
+        mfa_status,
+        mfa_method
     )
 
 

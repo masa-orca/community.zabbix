@@ -269,3 +269,45 @@
     - name: assert that authentication was updated
       ansible.builtin.assert:
         that: zbxauth_update.changed is sameas True
+
+- when: zabbix_version is version('7.0', '>=')
+  name: Test about MFA setting.
+  block:
+    - name: prepare - create TOTP MFA method
+      community.zabbix.zabbix_mfa:
+        name: Zabbix TOTP
+        method_type: totp
+        hash_function: sha-1
+        code_length: 6
+
+    - name: test - update mfa_status and mfa_method paramters
+      community.zabbix.zabbix_authentication:
+        mfa_status: enabled
+        mfa_method: Zabbix TOTP
+      register: zbxauth_update
+
+    - name: assert that authentication was updated
+      ansible.builtin.assert:
+        that:
+          - zbxauth_update.changed is sameas True
+
+    - name: test - update mfa_status and mfa_method paramters
+      community.zabbix.zabbix_authentication:
+        mfa_status: enabled
+        mfa_method: Zabbix TOTP
+      register: zbxauth_update
+
+    - name: test - update mfa_status paramter to
+      community.zabbix.zabbix_authentication:
+        mfa_status: disabled
+      register: zbxauth_update
+
+    - name: assert that authentication was updated
+      ansible.builtin.assert:
+        that:
+          - zbxauth_update.changed is sameas True
+
+    - name: cleanup - delete TOTP MFA method
+      community.zabbix.zabbix_mfa:
+        name: Zabbix TOTP
+        state: absent
