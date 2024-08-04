@@ -813,7 +813,7 @@ def main():
     )
     module = AnsibleModule(
         argument_spec=argument_spec,
-        required_if= [["mfa_status", "enabled", ["mfa_method"]]],
+        required_if=[["mfa_status", "enabled", ["mfa_method"]]],
         supports_check_mode=True
     )
 
