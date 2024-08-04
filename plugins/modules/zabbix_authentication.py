@@ -689,12 +689,12 @@ class Authentication(ZabbixBase):
 
             if LooseVersion("7.0") <= LooseVersion(self._zbx_api_version):
                 if mfa_status:
-                    params["mfa_status"] = str(helper_to_numeric_value(
+                    params["mfa_status"] = str(zabbix_utils.helper_to_numeric_value(
                         ["disabled", "enabled"],
                         mfa_status
                     ))
                 if mfa_method:
-                    params["mfaid"] = get_mfa(mfa_method)["mfaid"]
+                    params["mfaid"] = self.get_mfa(mfa_method)["mfaid"]
 
             future_authentication = current_authentication.copy()
             future_authentication.update(params)
