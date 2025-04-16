@@ -48,6 +48,46 @@ options:
             - Length of maintenance window in minutes.
         default: 10
         type: int
+    timeperiods:
+        description:
+            - Timeperiods of maintenance window.
+        type: list
+        elements: dict
+        suboptions:
+            timeperiod_type:
+                description:
+                    - Type of time period.
+                type: str
+                default: one_time_only
+                choices: [ "one_time_only", "daily", "weekly", "monthly" ]
+            start_date:
+                description:
+                    - Start date of the maintenance window.
+                    - This value will be used if I(timeperiod_type=one_time_only).
+                    - The date format is YYYY-MM-DD:HH:MM.
+                    - If not specified, the current date will be used.
+                type: str
+                choices: [ "one_time_only", "daily", "weekly", "monthly" ]
+            start_time:
+                description:
+                    - Start time of the maintenance window.
+                    - This value will be used if I(timeperiod_type=daily), I(timeperiod_type=weekly) or I(timeperiod_type=monthly).
+                    - The time format is HH:MM.
+                type: str
+                default: 00:00
+            period:
+                description:
+                    - Length of the time period in minutes.
+                type: int
+                default: 0
+            every:
+                description:
+                    - For daily and weekly periods every defines day or week intervals.
+                    - For monthly periods every defines month intervals.
+                    - This value will be used if I(timeperiod_type=daily), I(timeperiod_type=weekly) or I(timeperiod_type=monthly).
+                type: int
+                default: 0
+
     name:
         description:
             - Unique name of maintenance window.
