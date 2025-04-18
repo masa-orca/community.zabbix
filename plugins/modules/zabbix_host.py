@@ -27,7 +27,7 @@ options:
         description:
             - Name of the host in Zabbix.
             - I(host_name) is the unique identifier used and cannot be updated using this module.
-        required: true
+        required: false
         type: str
     visible_name:
         description:
@@ -341,7 +341,29 @@ options:
                 type: str
                 default: ""
         aliases: [ host_tags ]
+    host_json:
+        description:
+            - JSON dump of hosts to import.
+            - Multiple hosts can be imported this way.
+            - Mutually exclusive with I(host_name) and I(host_xml) and I(host_yaml).
+        required: false
+        type: json
+    host_xml:
+        description:
+            - XML dump of hosts to import.
+            - Multiple hosts can be imported this way.
+            - Mutually exclusive with I(host_name) and I(host_json) and I(host_yaml).
+        required: false
+        type: str
+    host_yaml:
+        description:
+            - Context of exported hosts file to import.
+            - Multiple hosts can be imported this way.
+            - Mutually exclusive with I(host_name) and I(host_json) and I(host_xml).
+        required: false
+        type: str
 
+        
 extends_documentation_fragment:
 - community.zabbix.zabbix
 
@@ -1090,14 +1112,24 @@ def main():
                 tag=dict(type="str", required=True),
                 value=dict(type="str", default="")
             )
-        )
+        ),
+        host_json=dict(type="json", required=False),
+        host_xml=dict(type="str", required=False),
+        host_yaml=dict(type="str", required=False),
     ))
 
     module = AnsibleModule(
         argument_spec=argument_spec,
+        required_one_of=[
+            ["host_name", "host_json", "host_xml", "host_yaml"]
+        ],
+        mutually_exclusive=[
+            ["host_name", "host_json", "host_xml", "host_yaml"]
+        ],
         required_if=([
             ["monitored_by", "proxy", ("proxy",)],
-            ["monitored_by", "proxy_group", ("proxy_group",)]
+            ["monitored_by", "proxy_group", ("proxy_group",)],
+            ["state", "absent", ["host_name"]]
         ]),
         supports_check_mode=True
     )
@@ -1128,6 +1160,9 @@ def main():
     tags = module.params["tags"]
     monitored_by = module.params["monitored_by"]
     proxy_group = module.params["proxy_group"]
+    host_json = module.params["host_json"]
+    host_xml = module.params["host_xml"]
+    host_yaml = module.params["host_yaml"]
 
     # convert enabled to 0; disabled to 1
     status = 1 if status == "disabled" else 0
