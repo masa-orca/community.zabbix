@@ -590,7 +590,17 @@ def main():
             ),
         )
     )
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_one_of=[
+            ["timeperiods", "minutes"]
+        ],
+        mutually_exclusive=[
+            ["timeperiods", "minutes"]
+        ],
+        supports_check_mode=True
+    )
 
     maint = MaintenanceModule(module)
 
@@ -599,6 +609,7 @@ def main():
     append = module.params["append"]
     state = module.params["state"]
     minutes = module.params["minutes"]
+    timeperiods = module.params["timeperiods"]
     name = module.params["name"]
     desc = module.params["desc"]
     collect_data = module.params["collect_data"]
@@ -606,6 +617,7 @@ def main():
     active_since = module.params["active_since"]
     active_till = module.params["active_till"]
     tags = module.params["tags"]
+    tags_evaltype = module.params["tags_evaltype"]
 
     if collect_data:
         maintenance_type = 0
