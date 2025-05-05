@@ -59,7 +59,7 @@ jobs:
 
       - name: Install specific version ansible-core
         if: matrix.container.ansible_core != null
-        run: pip install ${{ matrix.container.ansible_core }}
+        run: pip install "${{ matrix.container.ansible_core }}"
 
       - name: Install dependencies
         run: pip install -r molecule/requirements.txt
