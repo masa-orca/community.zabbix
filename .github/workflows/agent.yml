@@ -26,14 +26,15 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - rockylinux9
-          - rockylinux8
-          - ubuntu2404
-          - ubuntu2204
-          - ubuntu2004
-          - debian12
-          - debian11
-          - opensuseleap15
+          - os: rockylinux9
+          - os: rockylinux8
+            ansible_core: ansible-core<2.17
+          - os: ubuntu2404
+          - os: ubuntu2204
+          - os: ubuntu2004
+          - os: debian12
+          - os: debian11
+          - os: opensuseleap15
         version:
           - v72
           - v70
@@ -53,10 +54,15 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install latest pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install specific version ansible-core
+        if: matrix.container.ansible-core != null
+        run: pip install ${{ matrix.container.ansible-core }}
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r molecule/requirements.txt
+        run: pip install -r molecule/requirements.txt
 
       - name: Build the collection
         run: |
@@ -77,8 +83,8 @@ jobs:
       - name: Run role tests
         working-directory: molecule/zabbix_agent_tests
         run: >-
-          MY_MOLECULE_CONTAINER=${{ matrix.container }}
-          MY_MOLECULE_IMAGE=${{ matrix.container }}
+          MY_MOLECULE_CONTAINER=${{ matrix.container.os }}
+          MY_MOLECULE_IMAGE=${{ matrix.container.os }}
           MY_MOLECULE_VERSION=${{ matrix.version }}
           MY_MOLECULE_DOCKER_COMMAND=${{ matrix.command }}
           molecule -c common/molecule.yml test -s ${{ matrix.scenario_name }}
