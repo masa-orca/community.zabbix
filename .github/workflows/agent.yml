@@ -35,6 +35,8 @@ jobs:
           - os: debian12
           - os: debian11
           - os: opensuseleap15
+            ansible_core: ansible-core<2.17
+
         version:
           - v72
           - v70
