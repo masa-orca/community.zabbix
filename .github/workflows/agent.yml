@@ -58,7 +58,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install specific version ansible-core
-        if: matrix.container.ansible-core != null
+        if: matrix.container.ansible_core != null
         run: pip install ${{ matrix.container.ansible_core }}
 
       - name: Install dependencies
