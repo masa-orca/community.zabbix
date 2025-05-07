@@ -325,29 +325,17 @@ class MaintenanceModule(ZabbixBase):
         self,
         group_ids,
         host_ids,
-        start_time,
-        maintenance_type,
-        period,
         name,
         desc,
         tags,
+        timeperiods,
     ):
-        end_time = start_time + period
         parameters = {
             "groups": [{"groupid": groupid} for groupid in group_ids],
             "hosts": [{"hostid": hostid} for hostid in host_ids],
             "name": name,
             "maintenance_type": maintenance_type,
-            "active_since": str(start_time),
-            "active_till": str(end_time),
             "description": desc,
-            "timeperiods": [
-                {
-                    "timeperiod_type": "0",
-                    "start_date": str(start_time),
-                    "period": str(period),
-                }
-            ],
         }
         if LooseVersion(self._zbx_api_version) < LooseVersion("6.2"):
             parameters["groupids"] = group_ids
@@ -356,6 +344,8 @@ class MaintenanceModule(ZabbixBase):
             del parameters["hosts"]
         if tags is not None:
             parameters["tags"] = tags
+        if timeperiods is not None:
+            parameters["timeperiods"] = timeperiods
         self._zapi.maintenance.create(parameters)
         return 0, None, None
 
@@ -379,13 +369,7 @@ class MaintenanceModule(ZabbixBase):
             "active_since": str(start_time),
             "active_till": str(end_time),
             "description": desc,
-            "timeperiods": [
-                {
-                    "timeperiod_type": "0",
-                    "start_date": str(start_time),
-                    "period": str(period),
-                }
-            ],
+            "timeperiods": timeperiods,
         }
         if LooseVersion(self._zbx_api_version) < LooseVersion("6.2"):
             parameters["groupids"] = group_ids
@@ -509,7 +493,6 @@ def main():
                 aliases=["host_name"],
                 elements="str",
             ),
-            minutes=dict(type="int", required=False, default=10),
             timeperiods=dict(
                 type="list",
                 required=False,
@@ -518,11 +501,52 @@ def main():
                 options=dict(
                     timeperiod_type=dict(
                         type="str",
+                        default="one_time_only",
+                        choices=["one_time_only", "daily", "weekly", "monthly"],
+                    ),
+                    start_date=dict(type="str", required=False),
+                    start_time=dict(type="str", default="00:00"),
+                    period=dict(type="int", default=0),
+                    every=dict(type="int", default=0),
+                    dayofweek=dict(
+                        type="str",
+                        choices=[
+                            "first_week",
+                            "second_week",
+                            "third_week",
+                            "fourth_week",
+                            "last_week",
+                        ],
+                        default="first_week",
+                    ),
+                    day=dict(type="int", required=False),
+                    months=dict(
+                        type="list",
+                        elements="str",
+                        choices=[
+                            "January",
+                            "February",
+                            "March",
+                            "April",
+                            "May",
+                            "June",
+                            "July",
+                            "August",
+                            "September",
+                            "October",
+                            "November",
+                            "December",
+                        ],
+                    ),
+                ),
+                options=dict(
+                    timeperiod_type=dict(
+                        type="str",
                         required=False,
                         default="one_time_only",
                         choices=["one_time_only", "daily", "weekly", "monthly"],
                     ),
-                    start_date=dict(type="str", required=False, default=""),
+                    start_date=dict(type="str", required=False),
                     start_time=dict(type="str", required=False, default="00:00"),
                     period=dict(type="int", required=False, default=0),
                     every=dict(type="int", required=False, default=0),
@@ -593,13 +617,10 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        required_one_of=[
-            ["timeperiods", "minutes"]
-        ],
-        mutually_exclusive=[
-            ["timeperiods", "minutes"]
-        ],
-        supports_check_mode=True
+        required_one_of=[["host_names", "host_groups"]],
+        mutually_exclusive=[["minutes", "timeperiods"]],
+        required_one_of=[["minutes", "timeperiods"]],
+        supports_check_mode=True,
     )
 
     maint = MaintenanceModule(module)
