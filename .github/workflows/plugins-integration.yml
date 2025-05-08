@@ -20,9 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         zabbix_container:
-          - version: "6.0"
-          - version: "7.0"
-          - version: "7.2"
+          - version: "6.0-latest"
+          - version: "7.0-latest"
+          - version: "7.2-latest"
           - version: "trunk"
         ansible:
           # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-changelogs
