@@ -47,7 +47,6 @@ options:
     minutes:
         description:
             - Length of maintenance window in minutes.
-            - This value will be deprecated after community.zabbix 4.0.0 version.
         default: 10
         type: int
     timeperiods:
@@ -321,6 +320,91 @@ from ansible.module_utils.compat.version import LooseVersion
 
 
 class MaintenanceModule(ZabbixBase):
+    def convert_timeperiods(self, timeperiods):
+        converted_timeperiods = []
+
+        timeperiod_type_values = [
+            "one_time_only",
+            None,
+            "daily",
+            "weekly",
+            "monthly"
+        ]
+
+        every_values = [
+            None,
+            "first_week",
+            "second_week",
+            "third_week",
+            "fourth_week",
+            "last_week"
+        ]
+
+        dayofweek_values = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+        ]
+
+        month = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ]
+
+        for timeperiod in timeperiods:
+            converted_timeperiod = {}
+
+            if timeperiod.get('period') is not None:
+                converted_timeperiod["period"] = int(timeperiod["period"]) * 60
+            if timeperiod.get('timeperiod_type') is not None:
+                converted_timeperiod["timeperiod_type"] = zabbix_utils.helper_to_numeric_value(
+                    timeperiod_type_values, timeperiod["timeperiod_type"]
+                )
+            if timeperiod.get('start_date') is not None:
+                start_date = datetime.datetime.fromisoformat(timeperiod["start_date"])
+                converted_timeperiod["start_date"] = int(time.mktime(start_date.timetuple()))
+            if timeperiod.get('start_time') is not None:
+                start_time = datetime.datetime.strptime(timeperiod["start_time"], "%H:%M")
+                converted_timeperiod["start_time"] = int(
+                    start_time.hour * 3600 + start_time.minute * 60
+                )
+            if timeperiod.get('every') is not None:
+                converted_timeperiod["every"] = zabbix_utils.helper_to_numeric_value(
+                    every_values, timeperiod["every"]
+                )
+            if timeperiod.get('dayofweek') is not None:
+                for day in timeperiod["dayofweek"]:
+                    converted_timeperiod["dayofweek"] = 0
+                    converted_timeperiod["dayofweek"] += 2 ** zabbix_utils.helper_to_numeric_value(
+                        dayofweek_values, timeperiod["dayofweek"]
+                    )
+            if timeperiod.get('day') is not None:
+                converted_timeperiod["day"] = int(timeperiod["day"])
+            if timeperiod.get('months') is not None:
+                for month in timeperiod["months"]:
+                    converted_timeperiod["months"] = 0
+                    converted_timeperiod["months"] += 2 ** zabbix_utils.helper_to_numeric_value(
+                        month, timeperiod["months"]
+                    )
+
+            converted_timeperiods.append(converted_timeperiod)
+
+        return converted_timeperiods
+
     def create_maintenance(
         self,
         group_ids,
@@ -452,10 +536,11 @@ class MaintenanceModule(ZabbixBase):
         group_ids,
         host_ids,
         maintenance_type,
-        start_time,
-        period,
+        timeperiods,
+        active_since,
+        active_till,
         desc,
-        tags,
+        tags
     ):
         if sorted(group_ids) != sorted(maintenance["groupids"]):
             return True
@@ -463,10 +548,9 @@ class MaintenanceModule(ZabbixBase):
             return True
         if str(maintenance_type) != maintenance["maintenance_type"]:
             return True
-        if str(int(start_time)) != maintenance["active_since"]:
-            return True
-        if str(int(start_time + period)) != maintenance["active_till"]:
-            return True
+
+
+
         if str(desc) != maintenance["description"]:
             return True
         if tags is not None and "tags" in maintenance:
@@ -498,6 +582,53 @@ def main():
                 required=False,
                 default=None,
                 elements="dict",
+                options=dict(
+                    timeperiod_type=dict(
+                        type="str",
+                        default="one_time_only",
+                        choices=[
+                            "one_time_only",
+                            "daily",
+                            "weekly",
+                            "monthly",
+                        ],
+                    ),
+                    start_date=dict(type="str"),
+                    start_time=dict(type="str", default="00:00"),
+                    period=dict(type="int", default=0),
+                    every=dict(type="int", default=0),
+                    dayofweek=dict(
+                        type="str",
+                        choices=[
+                            "first_week",
+                            "second_week",
+                            "third_week",
+                            "fourth_week",
+                            "last_week",
+                        ],
+                        default="first_week",
+                    ),
+                    day=dict(type="int"),
+                    months=dict(
+                        type="list",
+                        elements="str",
+                        choices=[
+                            "January",
+                            "February",
+                            "March",
+                            "April",
+                            "May",
+                            "June",
+                            "July",
+                            "August",
+                            "September",
+                            "October",
+                            "November",
+                            "December",
+                        ],
+                    ),
+                ),
+            ),
                 options=dict(
                     timeperiod_type=dict(
                         type="str",
@@ -549,8 +680,7 @@ def main():
                     start_date=dict(type="str", required=False),
                     start_time=dict(type="str", required=False, default="00:00"),
                     period=dict(type="int", required=False, default=0),
-                    every=dict(type="int", required=False, default=0),
-                    dayofweek=dict(
+                    every=dict(
                         type="str",
                         required=False,
                         default="first_week",
@@ -563,24 +693,19 @@ def main():
                         ],
                     ),
                     day=dict(type="int", required=False, default=0),
-                    months=dict(
+                    dayofweek=dict(
                         type="list",
                         required=False,
                         default=None,
                         elements="str",
                         choices=[
-                            "January",
-                            "February",
-                            "March",
-                            "April",
-                            "May",
-                            "June",
-                            "July",
-                            "August",
-                            "September",
-                            "October",
-                            "November",
-                            "December",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday"
                         ],
                     ),
                 ),
@@ -617,9 +742,11 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        required_one_of=[["host_names", "host_groups"]],
+        required_one_of=[
+            ["host_names", "host_groups"],
+            ["minutes", "timeperiods"]
+        ],
         mutually_exclusive=[["minutes", "timeperiods"]],
-        required_one_of=[["minutes", "timeperiods"]],
         supports_check_mode=True,
     )
 
@@ -662,17 +789,27 @@ def main():
                 msg="At least one host_name or host_group must be defined for each created maintenance."
             )
 
-        now = (
-            datetime.datetime.fromisoformat(active_since)
-            if active_since != ""
-            else datetime.datetime.now().replace(second=0)
-        )
-        start_time = int(time.mktime(now.timetuple()))
-        period = (
-            int((datetime.datetime.fromisoformat(active_till) - now).total_seconds())
-            if active_till != ""
-            else 60 * int(minutes)
-        )  # N * 60 seconds
+        if minutes is not None:
+            now = (
+                datetime.datetime.fromisoformat(active_since)
+                if active_since != ""
+                else datetime.datetime.now().replace(second=0)
+            )
+            start_time = int(time.mktime(now.timetuple()))
+
+            if active_till != "":
+                period = int((datetime.datetime.fromisoformat(active_till) + now).total_seconds())
+            else:
+                active_till = int((datetime.datetime.fromisoformat(active_till) + now).total_seconds())
+                period = 60 * int(minutes)
+            
+            timeperiods = [
+                {
+                    "timeperiod_type": "one_time_only",
+                    "start_time": start_time,
+                    "period": period
+                }
+            ]
 
         if host_groups:
             (rc, group_ids, error) = maint.get_group_ids(host_groups)
@@ -705,9 +842,11 @@ def main():
                 host_ids,
                 maintenance_type,
                 start_time,
-                period,
+                timeperiods,
+                active_since,
+                active_till,
                 desc,
-                tags,
+                tags
             ):
                 if module.check_mode:
                     changed = True
