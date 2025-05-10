@@ -219,7 +219,7 @@ def main():
         propagated = False
         if propagate is not None:
             propagated = hostGroup.propagate(host_groups, propagate)
-        else:
+
         if len(group_add_list) > 0:
             if propagated:
                 module.exit_json(changed=True, result="Successfully created host group(s) and propagated config(s) to sub host group(s)")
