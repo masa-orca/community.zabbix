@@ -112,6 +112,8 @@ EXAMPLES = r'''
 
 from ansible.module_utils.basic import AnsibleModule
 
+from ansible.module_utils.compat.version import LooseVersion
+
 from ansible_collections.community.zabbix.plugins.module_utils.base import ZabbixBase
 import ansible_collections.community.zabbix.plugins.module_utils.helpers as zabbix_utils
 
