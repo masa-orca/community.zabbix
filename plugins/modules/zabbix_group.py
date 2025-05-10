@@ -144,10 +144,10 @@ class HostGroup(ZabbixBase):
             self._module.fail_json(msg="Failed to delete host group(s), Exception: %s" % e)
 
     # get group ids by name
-    def get_group_ids(self, host_groups):
+    def get_group_ids(self, host_groups, output='extend'):
         group_ids = []
 
-        group_list = self._zapi.hostgroup.get({'output': 'extend', 'filter': {'name': host_groups}})
+        group_list = self._zapi.hostgroup.get({'output': output, 'filter': {'name': host_groups}})
         for group in group_list:
             group_id = group['groupid']
             group_ids.append(group_id)
@@ -156,7 +156,7 @@ class HostGroup(ZabbixBase):
     def propagate(self, host_groups, propagate):
         if (LooseVersion(self._zbx_api_version) < LooseVersion('6.2')):
             return False
-        _, group_list = self.get_group_ids(host_groups)
+        group_ids, group_list = self.get_group_ids(host_groups, output='groupid')
         if self._module.check_mode:
             self._module.exit_json(changed=True)
         try:
