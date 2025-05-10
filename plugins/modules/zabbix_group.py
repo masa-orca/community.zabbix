@@ -45,12 +45,12 @@ options:
             permissions:
                 description:
                     - If set C(true), permissions will be propagated.
-                type: boolean
+                type: bool
                 default: false
             tag_filters:
                 description:
                     - If set C(true), tag_filters will be propagated.
-                type: boolean
+                type: bool
                 default: false
 
 extends_documentation_fragment:
@@ -173,13 +173,13 @@ def main():
     argument_spec = zabbix_utils.zabbix_common_argument_spec()
     argument_spec.update(dict(
         host_groups=dict(type='list', required=True, aliases=['host_group'], elements='str'),
-        propagate=dict(type='dict', elements='str', options=dict(
+        propagate=dict(type='dict', options=dict(
             permissions=dict(
-                type="boolean",
+                type="bool",
                 default=False
             ),
             tag_filters=dict(
-                type="boolean",
+                type="bool",
                 default=False
             )
         )),
