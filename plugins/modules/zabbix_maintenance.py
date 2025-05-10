@@ -549,7 +549,20 @@ class MaintenanceModule(ZabbixBase):
         if str(maintenance_type) != maintenance["maintenance_type"]:
             return True
 
+        if timeperiods is not None:
+            timeperiods_diff_dict = helper_compare_lists(
+                timeperiods,
+                maintenance["timeperiods"]
+            )
 
+            if timeperiods_diff_dict is not {}:
+                return True
+
+        if str(active_since) != maintenance["active_since"]:
+            return True
+
+        if str(active_till) != maintenance["active_till"]:
+            return True
 
         if str(desc) != maintenance["description"]:
             return True
@@ -582,53 +595,6 @@ def main():
                 required=False,
                 default=None,
                 elements="dict",
-                options=dict(
-                    timeperiod_type=dict(
-                        type="str",
-                        default="one_time_only",
-                        choices=[
-                            "one_time_only",
-                            "daily",
-                            "weekly",
-                            "monthly",
-                        ],
-                    ),
-                    start_date=dict(type="str"),
-                    start_time=dict(type="str", default="00:00"),
-                    period=dict(type="int", default=0),
-                    every=dict(type="int", default=0),
-                    dayofweek=dict(
-                        type="str",
-                        choices=[
-                            "first_week",
-                            "second_week",
-                            "third_week",
-                            "fourth_week",
-                            "last_week",
-                        ],
-                        default="first_week",
-                    ),
-                    day=dict(type="int"),
-                    months=dict(
-                        type="list",
-                        elements="str",
-                        choices=[
-                            "January",
-                            "February",
-                            "March",
-                            "April",
-                            "May",
-                            "June",
-                            "July",
-                            "August",
-                            "September",
-                            "October",
-                            "November",
-                            "December",
-                        ],
-                    ),
-                ),
-            ),
                 options=dict(
                     timeperiod_type=dict(
                         type="str",
@@ -670,45 +636,9 @@ def main():
                         ],
                     ),
                 ),
-                options=dict(
-                    timeperiod_type=dict(
-                        type="str",
-                        required=False,
-                        default="one_time_only",
-                        choices=["one_time_only", "daily", "weekly", "monthly"],
-                    ),
-                    start_date=dict(type="str", required=False),
-                    start_time=dict(type="str", required=False, default="00:00"),
-                    period=dict(type="int", required=False, default=0),
-                    every=dict(
-                        type="str",
-                        required=False,
-                        default="first_week",
-                        choices=[
-                            "first_week",
-                            "second_week",
-                            "third_week",
-                            "fourth_week",
-                            "last_week",
-                        ],
-                    ),
-                    day=dict(type="int", required=False, default=0),
-                    dayofweek=dict(
-                        type="list",
-                        required=False,
-                        default=None,
-                        elements="str",
-                        choices=[
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday"
-                        ],
-                    ),
-                ),
+                required_if=[
+                    ["timeperiod_type", "monthly", ["months"]],
+                ]
             ),
             host_groups=dict(
                 type="list",
@@ -742,10 +672,6 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        required_one_of=[
-            ["host_names", "host_groups"],
-            ["minutes", "timeperiods"]
-        ],
         mutually_exclusive=[["minutes", "timeperiods"]],
         supports_check_mode=True,
     )
@@ -790,19 +716,20 @@ def main():
             )
 
         if minutes is not None:
-            now = (
-                datetime.datetime.fromisoformat(active_since)
-                if active_since != ""
-                else datetime.datetime.now().replace(second=0)
-            )
+            if active_since != ""
+                now = datetime.datetime.fromisoformat(active_since)
+            else:
+                now = datetime.datetime.now().replace(second=0)
+                active_since = int(time.mktime(now.timetuple()))
+
             start_time = int(time.mktime(now.timetuple()))
 
             if active_till != "":
                 period = int((datetime.datetime.fromisoformat(active_till) + now).total_seconds())
             else:
-                active_till = int((datetime.datetime.fromisoformat(active_till) + now).total_seconds())
                 period = 60 * int(minutes)
-            
+                active_till = int((datetime.datetime.fromisoformat(active_till) + now).total_seconds())
+
             timeperiods = [
                 {
                     "timeperiod_type": "one_time_only",
