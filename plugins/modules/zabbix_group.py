@@ -154,7 +154,7 @@ class HostGroup(ZabbixBase):
         return group_ids, group_list
 
     def propagate(self, group_ids, propagate):
-        if (LooseVersion(self.zabbix_version) < LooseVersion('6.2')) or propagate is None:
+        if (LooseVersion(self._zbx_api_version) < LooseVersion('6.2')) or propagate is None:
             return False
         if self._module.check_mode:
             self._module.exit_json(changed=True)
