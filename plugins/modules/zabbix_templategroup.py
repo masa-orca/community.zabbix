@@ -35,7 +35,17 @@ options:
         type: list
         elements: str
         aliases: [ "template_group" ]
-
+    propagate:
+        description:
+            - List of settings will be propagated.
+            - This parameter is for Zabbix > 6.0.
+        type: dict
+        suboptions:
+            permissions:
+                description:
+                    - If set C(true), permissions will be propagated.
+                type: bool
+                default: false
 extends_documentation_fragment:
 - community.zabbix.zabbix
 
@@ -134,11 +144,34 @@ class TemplateGroup(ZabbixBase):
             group_ids.append(group_id)
         return group_ids, group_list
 
+    def propagate(self, template_groups, propagate):
+        if (LooseVersion(self._zbx_api_version) < LooseVersion('6.2')):
+            return False
+        group_ids, group_list = self.get_group_ids(hotemplate_groupsst_groups)
+        groups = list(map(lambda group_id: {'groupid': group_id}, group_ids))
+        if self._module.check_mode:
+            self._module.exit_json(changed=True)
+        try:
+            self._zapi.hostgroup.propagate({
+                'groups': groups,
+                'permissions': propagate['permissions']
+            })
+        except Exception as e:
+            self._module.fail_json(msg="Failed to propagate: %s" % e)
+        return True
+
+
 
 def main():
     argument_spec = zabbix_utils.zabbix_common_argument_spec()
     argument_spec.update(dict(
         template_groups=dict(type='list', required=True, aliases=['template_group'], elements='str'),
+        propagate=dict(type='dict', options=dict(
+            permissions=dict(
+                type="bool",
+                default=False
+            )
+        )),
         state=dict(type='str', default="present", choices=['present', 'absent']),
     ))
     module = AnsibleModule(
@@ -147,6 +180,7 @@ def main():
     )
 
     template_groups = module.params['template_groups']
+    propagate = module.params['propagate']
     state = module.params['state']
 
     templateGroup = TemplateGroup(module)
@@ -170,10 +204,20 @@ def main():
     else:
         # create template groups
         group_add_list = templateGroup.create_template_group(template_groups)
+        propagated = False
+        if propagate is not None:
+            propagated = templateGroup.propagate(template_groups, propagate)
+
         if len(group_add_list) > 0:
-            module.exit_json(changed=True, result="Successfully created template group(s): %s" % group_add_list)
+            if propagated:
+                module.exit_json(changed=True, result="Successfully created template group(s) and propagated config(s) to sub template group(s)")
+            else:
+                module.exit_json(changed=True, result="Successfully created template group(s): %s" % group_add_list)
         else:
-            module.exit_json(changed=False)
+            if propagated:
+                module.exit_json(changed=True, result="Successfully propagated config(s) to sub template group(s)")
+            else:
+                module.exit_json(changed=False)
 
 
 if __name__ == '__main__':
