@@ -153,14 +153,15 @@ class HostGroup(ZabbixBase):
             group_ids.append(group_id)
         return group_ids, group_list
 
-    def propagate(self, group_ids, propagate):
-        if (LooseVersion(self._zbx_api_version) < LooseVersion('6.2')) or propagate is None:
+    def propagate(self, host_groups, propagate):
+        if (LooseVersion(self._zbx_api_version) < LooseVersion('6.2')):
             return False
+        _, group_list = self.get_group_ids(host_groups)
         if self._module.check_mode:
             self._module.exit_json(changed=True)
         try:
             self._zapi.hostgroup.propagate({
-                'groups': group_ids,
+                'groups': group_list,
                 'permissions': propagate['permissions'],
                 'tag_filters': propagate['tag_filters']
             })
@@ -215,7 +216,10 @@ def main():
     else:
         # create host groups
         group_add_list = hostGroup.create_host_group(host_groups)
-        propagated = hostGroup.propagate(group_list, propagate)
+        propagated = False
+        if propagate is not None:
+            propagated = hostGroup.propagate(host_groups, propagate)
+        else:
         if len(group_add_list) > 0:
             if propagated:
                 module.exit_json(changed=True, result="Successfully created host group(s) and propagated config(s) to sub host group(s)")
