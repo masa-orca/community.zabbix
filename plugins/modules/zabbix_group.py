@@ -215,7 +215,7 @@ def main():
     else:
         # create host groups
         group_add_list = hostGroup.create_host_group(host_groups)
-        propagated = hostGroup.propagate(host_groups, propagate)
+        propagated = hostGroup.propagate(group_ids, propagate)
         if len(group_add_list) > 0:
             if propagated:
                 module.exit_json(changed=True, result="Successfully created host group(s) and propagated config(s) to sub host group(s)")
