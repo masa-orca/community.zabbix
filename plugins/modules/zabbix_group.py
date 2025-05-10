@@ -36,6 +36,22 @@ options:
         type: list
         elements: str
         aliases: [ "host_group" ]
+    propagate:
+        description:
+            - List of settings will be propagated.
+            - This parameter is for Zabbix > 6.0.
+        type: dict
+        suboptions:
+            permissions:
+                description:
+                    - If set C(true), permissions will be propagated.
+                type: boolean
+                default: false
+            tag_filters:
+                description:
+                    - If set C(true), tag_filters will be propagated.
+                type: boolean
+                default: false
 
 extends_documentation_fragment:
 - community.zabbix.zabbix
@@ -135,12 +151,37 @@ class HostGroup(ZabbixBase):
             group_ids.append(group_id)
         return group_ids, group_list
 
+    def propagate(self, group_ids, propagate):
+        if (LooseVersion(self.zabbix_version) < LooseVersion('6.2')) or propagate is None:
+            return False
+        if self._module.check_mode:
+            self._module.exit_json(changed=True)
+        try:
+            self._zapi.hostgroup.propagate({
+                'groups': group_ids,
+                'permissions': propagate['permissions'],
+                'tag_filters': propagate['tag_filters']
+            })
+        except Exception as e:
+            self._module.fail_json(msg="Failed to propagate: %s" % e)
+        return True
+
 
 def main():
     argument_spec = zabbix_utils.zabbix_common_argument_spec()
     argument_spec.update(dict(
         host_groups=dict(type='list', required=True, aliases=['host_group'], elements='str'),
-        state=dict(type='str', default="present", choices=['present', 'absent']),
+        propagate=dict(type='dict', elements='str', options=dict(
+            permissions=dict(
+                type="boolean",
+                default=False
+            ),
+            tag_filters=dict(
+                type="boolean",
+                default=False
+            )
+        )),
+        state=dict(type='str', default="present", choices=['present', 'absent'])
     ))
     module = AnsibleModule(
         argument_spec=argument_spec,
@@ -148,6 +189,7 @@ def main():
     )
 
     host_groups = module.params['host_groups']
+    propagate = module.params['propagate']
     state = module.params['state']
 
     hostGroup = HostGroup(module)
@@ -171,10 +213,17 @@ def main():
     else:
         # create host groups
         group_add_list = hostGroup.create_host_group(host_groups)
+        propagated = hostGroup.propagate(host_groups, propagate)
         if len(group_add_list) > 0:
-            module.exit_json(changed=True, result="Successfully created host group(s): %s" % group_add_list)
+            if propagated:
+                module.exit_json(changed=True, result="Successfully created host group(s) and propagated config(s) to sub host group(s)")
+            else:
+                module.exit_json(changed=True, result="Successfully created host group(s): %s" % group_add_list)
         else:
-            module.exit_json(changed=False)
+            if propagated:
+                module.exit_json(changed=True, result="Successfully propagated config(s) to sub host group(s): %s" % group_add_list)
+            else:
+                module.exit_json(changed=False)
 
 
 if __name__ == '__main__':
