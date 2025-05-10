@@ -228,7 +228,7 @@ def main():
                 module.exit_json(changed=True, result="Successfully created host group(s): %s" % group_add_list)
         else:
             if propagated:
-                module.exit_json(changed=True, result="Successfully propagated config(s) to sub host group(s): %s" % group_add_list)
+                module.exit_json(changed=True, result="Successfully propagated config(s) to sub host group(s)")
             else:
                 module.exit_json(changed=False)
 

@@ -88,7 +88,7 @@
     that: not zbxgrp_missing_delete is changed
 
 - when: zabbix_version is version('6.2', '>=')
-  name: support Zabbix version (>=6.2)
+  name: support propagate option for Zabbix version (>=6.2)
   block:
     - name: test - create hostgroup with propagation
       community.zabbix.zabbix_group:
@@ -119,3 +119,10 @@
     - name: assert that group was propagated
       ansible.builtin.assert:
         that: zbxgrp_propagate is changed
+
+    - name: test - delete hostgroups
+      community.zabbix.zabbix_group:
+        host_groups:
+          - zbxgrp_example_group01
+          - zbxgrp_example_group01/subhostgroup
+        state: absent
