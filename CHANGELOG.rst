@@ -4,6 +4,44 @@ community.zabbix Release Notes
 
 .. contents:: Topics
 
+v4.0.0
+======
+
+Minor Changes
+-------------
+
+- zabbix_item - added support for item types zabbix_agent, snmp_trap, snmp_agent, ipmi_agent and jmx_agent
+- You can now deploy these roles with inject_facts_as_vars set to false
+- roles/proxy - optionally creation of proxy_group and adding proxy to group (Zabbix 7.0+)
+- roles/zabbix_agent - Tweaking the windows service
+- zabbix_group - add propagate parameter
+- zabbix_templategroup - add propagate parameter
+- zabbix_action module - properly configure discovery check condition in discovery action depending on information provided in discovery check `value`.
+- zabbix_proxy role - fix Zabbix proxy with encryptuion registration
+- zabbix_server role - facilitate overriding packages installed
+- zabbix_server role - facilitate overriding database schemas loaded
+- zabbix_token module - Fix status value for zabbix Auth token. 
+
+Bugfixes
+--------
+
+- roles/zabbix_agent - UserParameterDir get wrong value if var zabbix_agent_userparamaterdir is set
+- zabbix_agent Role - Add _zabbix_agent_pluginsocket variable to override /tmp/agent.plugin.sock
+- roles/zabbix_repo - debian/ubuntu arm64 repo url fixed for zabbix 7.2
+- roles/zabbix_repo - debian architectures should map better for i386 and armhf
+- zabbix_template_info module - Dump YAML formatted template data without date in Zabbix 7.0 or higher.
+- roles/zabbix_agent - Reading existing PSK files failed on Windows
+
+New Modules
+-----------
+
+- zabbix_configuration module - Add this module to import configuration data.
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- zabbix 6.4 in roles is no longer supported
+
 v3.3.0
 ======
 

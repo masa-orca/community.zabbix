@@ -21,7 +21,7 @@ author:
     - ONODERA Masaru(@masa-orca)
 requirements:
     - "python >= 3.11"
-version_added: 3.4.0
+version_added: 4.0.0
 options:
     content_json:
         description:

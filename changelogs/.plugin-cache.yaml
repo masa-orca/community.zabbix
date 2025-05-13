@@ -37,6 +37,11 @@ plugins:
       name: zabbix_autoregister
       namespace: ''
       version_added: 1.6.0
+    zabbix_configuration:
+      description: Import Zabbix configuration
+      name: zabbix_configuration
+      namespace: ''
+      version_added: 4.0.0
     zabbix_connector:
       description: Create/Delete/Update Zabbix connectors
       name: zabbix_connector
@@ -246,4 +251,4 @@ plugins:
   shell: {}
   strategy: {}
   vars: {}
-version: 3.3.0
+version: 4.0.0
