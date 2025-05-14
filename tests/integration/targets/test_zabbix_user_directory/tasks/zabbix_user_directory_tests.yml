@@ -399,6 +399,12 @@
           - name: Media1
             mediatype: Email
             attribute: email1
+            severity:
+              - name: not_classified
+              - name: information
+              - name: warning
+              - name: average
+              - name: disaster
         provision_groups:
           - name: idpname1
             role: Guest role
@@ -424,6 +430,12 @@
           - name: Media1
             mediatype: Email
             attribute: email1
+            severity:
+              - name: not_classified
+              - name: information
+              - name: warning
+              - name: average
+              - name: disaster
         provision_groups:
           - name: idpname1
             role: Guest role

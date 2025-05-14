@@ -271,6 +271,26 @@ options:
                     - If present in data received from IdP and the value is not empty, will trigger media creation for the provisioned user.
                 type: str
                 required: true
+            severity:
+                description:
+                    - List of Severity names.
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description:
+                            - Severity property for the media.
+                        type: str
+                        required: true
+                        choices:
+                            - not_classified
+                            - information
+                            - warning
+                            - average
+                            - high
+                            - disaster
+        required: false
     provision_groups:
         type: list
         elements: dict
@@ -410,6 +430,13 @@ EXAMPLES = r"""
       - name: Media1
         mediatype: Email
         attribute: email1
+        severity:
+            - name: not_classified
+            - name: information
+            - name: warning
+            - name: average
+            - name: high
+            - name: disaster
     provision_groups:
       - name: idpname1
         role: Guest role
@@ -471,6 +498,25 @@ def main():
                     name=dict(type="str", required=True),
                     mediatype=dict(type="str", required=True),
                     attribute=dict(type="str", required=True),
+                    severity=dict(
+                        type="list",
+                        required=False,
+                        elements="dict",
+                        options=dict(
+                            name=dict(
+                                type="str",
+                                required=True,
+                                choices=[
+                                    "not_classified",
+                                    "information",
+                                    "warning",
+                                    "average",
+                                    "high",
+                                    "disaster"
+                                ]
+                            )
+                        )
+                    )
                 ),
             ),
             provision_groups=dict(
@@ -616,13 +662,32 @@ def main():
                 media_type_ids = user_directory._zapi.mediatype.get(
                     {"filter": {"name": media_type_name}}
                 )
+
                 if not media_type_ids:
                     module.fail_json("Mediatype '%s' cannot be found" % media_type_name)
+
+                severity_values = [
+                    "not_classified",
+                    "information",
+                    "warning",
+                    "average",
+                    "high",
+                    "disaster"
+                ]
+
+                severity_total = 0
+                if media["severity"] is not None:
+                    for severity in media["severity"]:
+                        severity_total += 2 ** zabbix_utils.helper_to_numeric_value(
+                            severity_values, severity["name"]
+                        )
+
                 parameters["provision_media"].append(
                     {
                         "name": media["name"],
                         "mediatypeid": media_type_ids[0]["mediatypeid"],
                         "attribute": media["attribute"],
+                        "severity": str(severity_total)
                     }
                 )
 
