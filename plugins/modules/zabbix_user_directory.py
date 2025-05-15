@@ -278,7 +278,7 @@ options:
                 type: list
                 elements: dict
                 suboptions:
-                    name:
+                    level:
                         description:
                             - Severity property for the media.
                         type: str
@@ -503,7 +503,7 @@ def main():
                         required=False,
                         elements="dict",
                         options=dict(
-                            name=dict(
+                            level=dict(
                                 type="str",
                                 required=True,
                                 choices=[
@@ -666,7 +666,7 @@ def main():
                 if not media_type_ids:
                     module.fail_json("Mediatype '%s' cannot be found" % media_type_name)
 
-                severity_values = [
+                severity_level_values = [
                     "not_classified",
                     "information",
                     "warning",
@@ -679,7 +679,7 @@ def main():
                 if media["severity"] is not None:
                     for severity in media["severity"]:
                         severity_total += 2 ** zabbix_utils.helper_to_numeric_value(
-                            severity_values, severity["name"]
+                            severity_level_values, severity["level"]
                         )
 
                 parameters["provision_media"].append(
