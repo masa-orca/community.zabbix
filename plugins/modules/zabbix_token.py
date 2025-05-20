@@ -164,7 +164,7 @@ class Token(ZabbixBase):
                 else:
                     params["status"] = "1"
 
-            if isinstance(expires_at, str):
+            if isinstance(expires_at, int):
                 params["expires_at"] = str(expires_at)
 
             if self._module.check_mode:
