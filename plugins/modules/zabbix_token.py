@@ -118,6 +118,8 @@ token:
     sample: "8ec0d52432c15c91fcafe9888500cf9a607f44091ab554dbee860f6b44fac895"
 """
 
+import json
+
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.community.zabbix.plugins.module_utils.base import ZabbixBase
@@ -194,15 +196,18 @@ class Token(ZabbixBase):
 
             if isinstance(status, bool):
                 if status:
-                    if token["status"] != "1":
-                        params["status"] = "1"
-                else:
                     if token["status"] != "0":
                         params["status"] = "0"
+                else:
+                    if token["status"] != "1":
+                        params["status"] = "1"
 
             if isinstance(expires_at, int) and str(expires_at) != token["expires_at"]:
                 params["expires_at"] = str(expires_at)
-
+            s = json.dumps(params)
+            self._module.warn(s)
+            s = json.dumps(token)
+            self._module.warn(s)
             # If params does not have any parameter except tokenid and name, no need to update.
             if len(params.keys()) == 2:
                 if not generate_token:

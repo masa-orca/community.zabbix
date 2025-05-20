@@ -5,7 +5,7 @@
     description: Admin test token
     username: Admin
     status: true
-    expires_at: 1700000000
+    expires_at: 2000000000
     state: present
   register: zbx_token
 
@@ -13,6 +13,21 @@
   ansible.builtin.assert:
     that:
       - zbx_token is changed
+
+- name: Update token (not changes)
+  community.zabbix.zabbix_token:
+    name: test token
+    description: Admin test token
+    username: Admin
+    status: true
+    expires_at: 2000000000
+    state: present
+  register: zbx_token
+
+- name: assert that token was NOT updated
+  ansible.builtin.assert:
+    that:
+      - not zbx_token is changed
 
 - name: Update token
   community.zabbix.zabbix_token:
